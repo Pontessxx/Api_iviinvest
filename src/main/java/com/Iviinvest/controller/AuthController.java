@@ -29,9 +29,9 @@ public class AuthController {
 
     @Operation(summary = "Login do usuário")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Login realizado com sucesso (retorna token)",
+            @ApiResponse(responseCode = "200", description = "Login realizado com sucesso",
                     content = @Content(mediaType = "application/json",
-                            examples = @ExampleObject(value = "{\"token\": \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0ZUBtYWlsLmNvbSJ9\"}")
+                            examples = @ExampleObject(value = "{\"message\": \"Login realizado com sucesso\"}")
                     )
             ),
             @ApiResponse(responseCode = "401", description = "Senha incorreta",
@@ -56,8 +56,11 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody @Valid LoginDTO dto) {
         try {
-            String token = service.autenticar(dto);
-            return ResponseEntity.ok(Map.of("token", token));
+            // verifica pelo dto o login { email: "", senha: "" }
+            service.autenticar(dto);
+            return ResponseEntity.ok(Map.of(
+                    "message", "Login realizado com sucesso"
+            ));
         } catch (ResponseStatusException ex) {
             return ResponseEntity
                     .status(ex.getStatusCode())

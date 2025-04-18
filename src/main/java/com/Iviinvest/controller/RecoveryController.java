@@ -41,6 +41,7 @@ public class RecoveryController {
                     )
             )
     })
+    @GetMapping("/token/{email}")
     public ResponseEntity<?> generateToken(@PathVariable @Email String email) {
         try {
             String token = service.gerarTokenReset(email);

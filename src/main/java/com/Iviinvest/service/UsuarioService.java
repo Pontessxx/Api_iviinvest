@@ -86,6 +86,7 @@ public class UsuarioService {
     public List<Usuario> listarTodos() {
         List<Usuario> usuarios = repository.findAll();
         usuarios.forEach(u -> u.setSenhaHash(null));
+        usuarios.forEach(u -> u.setTokenReset(null));
         return usuarios;
     }
 
