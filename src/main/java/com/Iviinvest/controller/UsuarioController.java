@@ -2,6 +2,7 @@ package com.Iviinvest.controller;
 
 import com.Iviinvest.dto.ErrorResponseDTO;
 import com.Iviinvest.dto.UserRegisterDTO;
+import com.Iviinvest.dto.UsuarioPublicDTO;
 import com.Iviinvest.model.Usuario;
 import com.Iviinvest.service.UsuarioService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -61,9 +62,9 @@ public class UsuarioController {
             @ApiResponse(responseCode = "200", description = "Lista retornada com sucesso")
     })
     @GetMapping
-    public List<Usuario> listarTodos() {
-        log.info("Listando todos os usuários.");
-        return service.listarTodos();
+    public ResponseEntity<List<UsuarioPublicDTO>> listarTodos() {
+        List<UsuarioPublicDTO> usuarios = service.listarTodosUsuariosPublicos();
+        return ResponseEntity.ok(usuarios);
     }
 
 
@@ -83,13 +84,10 @@ public class UsuarioController {
     })
     @GetMapping("/{id}")
     public ResponseEntity<?> buscarPorId(@PathVariable Long id) {
-        log.info("Buscando usuário por ID: {}", id);
         try {
-            Usuario usuario = service.buscarPorId(id);
-            log.info("Usuário encontrado: id={}, email={}", usuario.getId(), usuario.getEmail());
+            UsuarioPublicDTO usuario = service.buscarUsuarioPublicoPorId(id);
             return ResponseEntity.ok(usuario);
         } catch (ResponseStatusException ex) {
-            log.warn("Erro ao buscar usuário ID {}: {}", id, ex.getReason());
             return ResponseEntity.status(ex.getStatusCode()).body(Map.of(
                     "status", String.valueOf(ex.getStatusCode().value()),
                     "error", ex.getStatusCode().toString(),

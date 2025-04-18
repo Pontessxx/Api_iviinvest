@@ -2,12 +2,14 @@ package com.Iviinvest.service;
 
 import com.Iviinvest.dto.LoginDTO;
 import com.Iviinvest.dto.UserRegisterDTO;
+import com.Iviinvest.dto.UsuarioPublicDTO;
 import com.Iviinvest.model.Usuario;
 import com.Iviinvest.repository.UsuarioRepository;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -15,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class UsuarioService {
@@ -23,6 +26,10 @@ public class UsuarioService {
 
     private final UsuarioRepository repository;
     private final PasswordEncoder passwordEncoder;
+
+
+    @Autowired
+    private EmailService emailService;
 
     @Value("${jwt.secret}")
     private String jwtSecret;
@@ -65,15 +72,26 @@ public class UsuarioService {
     }
 
 
-    public String gerarTokenReset(String email) {
+    public void gerarTokenReset(String email) {
         Usuario usuario = repository.findByEmail(email)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado"));
 
         String token = UUID.randomUUID().toString();
-        usuario.setTokenReset(token);
+        String hashedToken = com.Iviinvest.util.HashUtil.sha256(token); // ajusta import se necessário
+
+        usuario.setTokenReset(hashedToken);
         repository.save(usuario);
-        log.info("Token de redefinição gerado para {}", email);
-        return token;
+
+        // Conteúdo do e-mail
+        String assunto = "Recuperação de Senha - Ivi Invest";
+        String corpo = "Olá,\n\nVocê solicitou a redefinição de senha para sua conta.\n" +
+                "Use o token abaixo para redefinir sua senha:\n\n" +
+                token + "\n\n" +
+                "Se você não fez essa solicitação, apenas ignore este e-mail.\n\n" +
+                "Atenciosamente,\nEquipe Ivi Invest";
+
+        emailService.enviar(email, assunto, corpo);
+        log.info("Token de redefinição enviado para o e-mail: {}", email);
     }
 
     public void redefinirSenha(String token, String novaSenha) {
@@ -114,6 +132,17 @@ public class UsuarioService {
         log.info("Usuário com id {} deletado", id);
     }
 
+    public List<UsuarioPublicDTO> listarTodosUsuariosPublicos() {
+        return repository.findAll().stream()
+                .map(usuario -> new UsuarioPublicDTO(usuario.getId()))
+                .collect(Collectors.toList());
+    }
+
+    public UsuarioPublicDTO buscarUsuarioPublicoPorId(Long id) {
+        Usuario usuario = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+        return new UsuarioPublicDTO(usuario.getId());
+    }
 
 
 

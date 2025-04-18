@@ -50,27 +50,15 @@ public class RecoveryController {
         log.info("Requisição recebida para geração de token de recuperação - Email: {}", email);
 
         try {
-            String token = service.gerarTokenReset(email);
-            log.info("Token de recuperação gerado com sucesso para o email: {}", email);
-            return ResponseEntity.ok(Map.of("token", token));
-
+            service.gerarTokenReset(email);
+            log.info("Processo de geração de token concluído.");
         } catch (ResponseStatusException ex) {
-            String motivo = ex.getReason() != null ? ex.getReason() : "Erro inesperado";
-
-            if (ex.getStatusCode().value() == 404) {
-                log.warn("Tentativa de geração de token para email não cadastrado: {}", email);
-            } else {
-                log.error("Erro ao gerar token para email {}: {}", email, motivo);
-            }
-
-            return ResponseEntity
-                    .status(ex.getStatusCode())
-                    .body(Map.of(
-                            "status", String.valueOf(ex.getStatusCode().value()),
-                            "error", ex.getStatusCode().toString(),
-                            "message", ex.getReason() != null ? ex.getReason() : "Erro inesperado"
-                    ));
+            log.warn("Tentativa com e-mail inexistente: {}", email);
         }
+
+        return ResponseEntity.ok(Map.of(
+                "message", "Se este e-mail estiver cadastrado, enviaremos instruções para redefinir sua senha."
+        ));
     }
 
     @Operation(summary = "Redefinir senha com token")
