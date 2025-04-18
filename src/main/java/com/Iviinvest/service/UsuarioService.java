@@ -53,12 +53,17 @@ public class UsuarioService {
     }
 
     private String gerarTokenJWT(Usuario usuario) {
+        Date agora = new Date();
+        Date expiracao = new Date(agora.getTime() + 86400000); // 24h
+
         return Jwts.builder()
                 .setSubject(usuario.getEmail())
-                .setIssuedAt(new Date())
+                .setIssuedAt(agora)
+                .setExpiration(expiracao)
                 .signWith(SignatureAlgorithm.HS512, jwtSecret.getBytes())
                 .compact();
     }
+
 
     public String gerarTokenReset(String email) {
         Usuario usuario = repository.findByEmail(email)

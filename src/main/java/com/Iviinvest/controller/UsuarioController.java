@@ -17,10 +17,16 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 @RestController
 @RequestMapping("/api/auth")
 public class UsuarioController {
+
+    private static final Logger log = LoggerFactory.getLogger(UsuarioController.class);
+
 
     private final UsuarioService service;
 
@@ -44,7 +50,10 @@ public class UsuarioController {
     })
     @PostMapping("/register")
     public ResponseEntity<Usuario> cadastrar(@RequestBody @Valid UserRegisterDTO dto) {
-        return ResponseEntity.ok(service.cadastrarUsuario(dto));
+        log.info("Requisição para cadastro de novo usuário: {}", dto.getEmail());
+        Usuario usuario = service.cadastrarUsuario(dto);
+        log.info("Usuário cadastrado com sucesso: id={}, email={}", usuario.getId(), usuario.getEmail());
+        return ResponseEntity.ok(usuario);
     }
 
     @Operation(summary = "Listar todos os usuários")
@@ -53,6 +62,7 @@ public class UsuarioController {
     })
     @GetMapping
     public List<Usuario> listarTodos() {
+        log.info("Listando todos os usuários.");
         return service.listarTodos();
     }
 
@@ -73,16 +83,18 @@ public class UsuarioController {
     })
     @GetMapping("/{id}")
     public ResponseEntity<?> buscarPorId(@PathVariable Long id) {
+        log.info("Buscando usuário por ID: {}", id);
         try {
-            return ResponseEntity.ok(service.buscarPorId(id));
+            Usuario usuario = service.buscarPorId(id);
+            log.info("Usuário encontrado: id={}, email={}", usuario.getId(), usuario.getEmail());
+            return ResponseEntity.ok(usuario);
         } catch (ResponseStatusException ex) {
-            return ResponseEntity
-                    .status(ex.getStatusCode())
-                    .body(Map.of(
-                            "status", String.valueOf(ex.getStatusCode().value()),
-                            "error", ex.getStatusCode().toString(),
-                            "message", ex.getReason() != null ? ex.getReason() : "Erro inesperado"
-                    ));
+            log.warn("Erro ao buscar usuário ID {}: {}", id, ex.getReason());
+            return ResponseEntity.status(ex.getStatusCode()).body(Map.of(
+                    "status", String.valueOf(ex.getStatusCode().value()),
+                    "error", ex.getStatusCode().toString(),
+                    "message", ex.getReason() != null ? ex.getReason() : "Erro inesperado"
+            ));
         }
     }
 
@@ -103,16 +115,18 @@ public class UsuarioController {
     })
     @PutMapping("/{id}")
     public ResponseEntity<?> atualizar(@PathVariable Long id, @RequestBody @Valid UserRegisterDTO dto) {
+        log.info("Atualizando usuário ID: {} com novo email: {}", id, dto.getEmail());
         try {
-            return ResponseEntity.ok(service.atualizar(id, dto));
+            Usuario atualizado = service.atualizar(id, dto);
+            log.info("Usuário atualizado com sucesso: id={}, email={}", atualizado.getId(), atualizado.getEmail());
+            return ResponseEntity.ok(atualizado);
         } catch (ResponseStatusException ex) {
-            return ResponseEntity
-                    .status(ex.getStatusCode())
-                    .body(Map.of(
-                            "status", String.valueOf(ex.getStatusCode().value()),
-                            "error", ex.getStatusCode().toString(),
-                            "message", ex.getReason() != null ? ex.getReason() : "Erro inesperado"
-                    ));
+            log.warn("Erro ao atualizar usuário ID {}: {}", id, ex.getReason());
+            return ResponseEntity.status(ex.getStatusCode()).body(Map.of(
+                    "status", String.valueOf(ex.getStatusCode().value()),
+                    "error", ex.getStatusCode().toString(),
+                    "message", ex.getReason() != null ? ex.getReason() : "Erro inesperado"
+            ));
         }
     }
 
@@ -128,7 +142,9 @@ public class UsuarioController {
     })
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
+        log.info("Solicitação para deletar usuário ID: {}", id);
         service.deletar(id);
+        log.info("Usuário deletado com sucesso: ID {}", id);
         return ResponseEntity.noContent().build();
     }
 

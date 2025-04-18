@@ -16,10 +16,14 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @RestController
 @RequestMapping("/api/recover")
 public class RecoveryController {
+
+    private static final Logger log = LoggerFactory.getLogger(AuthController.class);
 
     private final UsuarioService service;
 
@@ -43,10 +47,22 @@ public class RecoveryController {
     })
     @GetMapping("/token/{email}")
     public ResponseEntity<?> generateToken(@PathVariable @Email String email) {
+        log.info("Requisição recebida para geração de token de recuperação - Email: {}", email);
+
         try {
             String token = service.gerarTokenReset(email);
+            log.info("Token de recuperação gerado com sucesso para o email: {}", email);
             return ResponseEntity.ok(Map.of("token", token));
+
         } catch (ResponseStatusException ex) {
+            String motivo = ex.getReason() != null ? ex.getReason() : "Erro inesperado";
+
+            if (ex.getStatusCode().value() == 404) {
+                log.warn("Tentativa de geração de token para email não cadastrado: {}", email);
+            } else {
+                log.error("Erro ao gerar token para email {}: {}", email, motivo);
+            }
+
             return ResponseEntity
                     .status(ex.getStatusCode())
                     .body(Map.of(
@@ -73,10 +89,21 @@ public class RecoveryController {
     })
     @PutMapping("/password")
     public ResponseEntity<?> resetPassword(@RequestBody @Valid ResetPasswordDTO payload) {
+        log.info("Requisição recebida para redefinição de senha com token: {}", payload.getToken());
+
         try {
             service.redefinirSenha(payload.getToken(), payload.getNewPassword());
-            return ResponseEntity.ok("Password reset successfully.");
+            log.info("Senha redefinida com sucesso para token informado.");
+            return ResponseEntity.ok(Map.of("message", "Senha redefinida com sucesso"));
         } catch (ResponseStatusException ex) {
+            String motivo = ex.getReason() != null ? ex.getReason() : "Erro inesperado";
+
+            if (ex.getStatusCode().value() == 400) {
+                log.warn("Token inválido ou expirado: {}", payload.getToken());
+            } else {
+                log.error("Erro ao redefinir senha: {}", motivo);
+            }
+
             return ResponseEntity.status(ex.getStatusCode()).body(Map.of(
                     "status", String.valueOf(ex.getStatusCode().value()),
                     "error", ex.getStatusCode().toString(),

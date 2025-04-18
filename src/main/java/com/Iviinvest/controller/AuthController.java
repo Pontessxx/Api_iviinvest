@@ -10,16 +10,20 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
-
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.Operation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
+
+    private static final Logger log = LoggerFactory.getLogger(AuthController.class);
 
     private final UsuarioService service;
 
@@ -55,13 +59,26 @@ public class AuthController {
     })
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody @Valid LoginDTO dto) {
+        log.info("---------- [LOG] - LOGIN ----------");
         try {
             // verifica pelo dto o login { email: "", senha: "" }
             service.autenticar(dto);
+            log.info("login sucedido para : {}", dto.getEmail());
             return ResponseEntity.ok(Map.of(
                     "message", "Login realizado com sucesso"
             ));
         } catch (ResponseStatusException ex) {
+            String errorMessage = ex.getReason() != null ? ex.getReason() : "Erro inesperado";
+
+            if (ex.getStatusCode().value() == 401) {
+                log.warn("Senha incorreta para email: {}", dto.getEmail());
+            } else if (ex.getStatusCode().value() == 404) {
+                log.warn("Tentativa de login com email não cadastrado: {}", dto.getEmail());
+            } else {
+                log.error("Erro não tratado durante login: status={}, email={}, motivo={}",
+                        ex.getStatusCode().value(), dto.getEmail(), errorMessage);
+            }
+
             return ResponseEntity
                     .status(ex.getStatusCode())
                     .body(Map.of(
@@ -79,6 +96,5 @@ public class AuthController {
                     ));
         }
     }
-
 
 }
