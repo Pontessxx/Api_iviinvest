@@ -144,7 +144,18 @@ public class UsuarioService {
         return new UsuarioPublicDTO(usuario.getId());
     }
 
+    public String buscarPerfilInvestidorPorEmail(String email) {
+        Usuario usuario = repository.findByEmail(email)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado"));
+        return usuario.getPerfilInvestidor();
+    }
 
+    public Usuario atualizarPerfilInvestidorPorEmail(String email, String novoPerfil) {
+        Usuario usuario = repository.findByEmail(email)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado"));
+        usuario.setPerfilInvestidor(novoPerfil);
+        return repository.save(usuario);
+    }
 
 
 }

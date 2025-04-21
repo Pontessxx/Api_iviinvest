@@ -1,6 +1,7 @@
 package com.Iviinvest.controller;
 
 import com.Iviinvest.dto.ErrorResponseDTO;
+import com.Iviinvest.dto.PerfilDTO;
 import com.Iviinvest.dto.UserRegisterDTO;
 import com.Iviinvest.dto.UsuarioPublicDTO;
 import com.Iviinvest.model.Usuario;
@@ -146,6 +147,47 @@ public class UsuarioController {
         return ResponseEntity.noContent().build();
     }
 
+
+    @Operation(summary = "Buscar o perfil de investidor do usuário por e-mail")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Perfil de investidor retornado com sucesso",
+                    content = @Content(mediaType = "application/json",
+                            examples = @ExampleObject(value = "{\"perfilInvestidor\": \"Agressivo\"}")
+                    )
+            ),
+            @ApiResponse(responseCode = "404", description = "Usuário não encontrado",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponseDTO.class),
+                            examples = @ExampleObject(value = "{\"status\": \"404\", \"error\": \"404 NOT_FOUND\", \"message\": \"Usuário não encontrado\"}")
+                    )
+            )
+    })
+    @GetMapping("/perfil/{email}")
+    public ResponseEntity<PerfilDTO> buscarPerfilPorEmail(@PathVariable String email) {
+        String perfil = service.buscarPerfilInvestidorPorEmail(email);
+        return ResponseEntity.ok(new PerfilDTO(perfil));
+    }
+
+
+    @Operation(summary = "Atualizar o perfil de investidor do usuário por e-mail")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Perfil atualizado com sucesso",
+                    content = @Content(mediaType = "application/json",
+                            examples = @ExampleObject(value = "{\"perfilInvestidor\": \"Moderado\"}")
+                    )
+            ),
+            @ApiResponse(responseCode = "404", description = "Usuário não encontrado",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponseDTO.class),
+                            examples = @ExampleObject(value = "{\"status\": \"404\", \"error\": \"404 NOT_FOUND\", \"message\": \"Usuário não encontrado\"}")
+                    )
+            )
+    })
+    @PutMapping("/perfil/{email}")
+    public ResponseEntity<PerfilDTO> atualizarPerfilInvestidorPorEmail(@PathVariable String email, @RequestBody PerfilDTO dto) {
+        Usuario atualizado = service.atualizarPerfilInvestidorPorEmail(email, dto.getPerfilInvestidor());
+        return ResponseEntity.ok(new PerfilDTO(atualizado.getPerfilInvestidor()));
+    }
 
 
 

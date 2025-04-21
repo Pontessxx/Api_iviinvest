@@ -51,14 +51,25 @@ public class RecoveryController {
 
         try {
             service.gerarTokenReset(email);
-            log.info("Processo de geração de token concluído.");
+            log.info("Token enviado com sucesso para o email: {}", email);
+            return ResponseEntity.ok(Map.of(
+                    "status", "200",
+                    "message", "Se este e-mail estiver cadastrado, enviaremos instruções para redefinir sua senha."
+            ));
         } catch (ResponseStatusException ex) {
-            log.warn("Tentativa com e-mail inexistente: {}", email);
+            log.warn("Tentativa com e-mail inexistente ou erro: {}", email);
+            return ResponseEntity.ok(Map.of(
+                    "status", "200",
+                    "message", "Se este e-mail estiver cadastrado, enviaremos instruções para redefinir sua senha."
+            ));
+        } catch (Exception ex) {
+            log.error("Erro inesperado ao tentar gerar token: {}", ex.getMessage());
+            return ResponseEntity.status(500).body(Map.of(
+                    "status", "500",
+                    "error", "INTERNAL_SERVER_ERROR",
+                    "message", "Ocorreu um erro ao tentar enviar o e-mail de recuperação. Tente novamente mais tarde."
+            ));
         }
-
-        return ResponseEntity.ok(Map.of(
-                "message", "Se este e-mail estiver cadastrado, enviaremos instruções para redefinir sua senha."
-        ));
     }
 
     @Operation(summary = "Redefinir senha com token")

@@ -23,8 +23,10 @@ public class Usuario {
 
     private String tokenReset;
 
+    @Column(name = "perfil_investidor", nullable = true)
+    private String perfilInvestidor;
 
-
+    // Getters e Setters
     public Long getId() {
         return id;
     }
@@ -55,5 +57,13 @@ public class Usuario {
 
     public void setTokenReset(String tokenReset) {
         this.tokenReset = tokenReset;
+    }
+
+    public String getPerfilInvestidor() {
+        return perfilInvestidor;
+    }
+
+    public void setPerfilInvestidor(String perfilInvestidor) {
+        this.perfilInvestidor = perfilInvestidor;
     }
 }
