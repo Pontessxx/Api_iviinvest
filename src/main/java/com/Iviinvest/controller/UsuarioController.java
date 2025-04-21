@@ -1,9 +1,6 @@
 package com.Iviinvest.controller;
 
-import com.Iviinvest.dto.ErrorResponseDTO;
-import com.Iviinvest.dto.PerfilDTO;
-import com.Iviinvest.dto.UserRegisterDTO;
-import com.Iviinvest.dto.UsuarioPublicDTO;
+import com.Iviinvest.dto.*;
 import com.Iviinvest.model.Usuario;
 import com.Iviinvest.service.UsuarioService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -93,11 +90,33 @@ public class UsuarioController {
             )
     })
     @PostMapping("/register")
-    public ResponseEntity<Usuario> cadastrar(@RequestBody @Valid UserRegisterDTO dto) {
+    public ResponseEntity<?> cadastrar(@RequestBody @Valid UserRegisterDTO dto) {
         log.info("[POST] - Tentativa de cadastro para email: {}", dto.getEmail());
-        Usuario usuario = service.cadastrarUsuario(dto);
-        log.info("[POST] - Usuário cadastrado com ID: {} e email: {}", usuario.getId(), usuario.getEmail());
-        return ResponseEntity.ok(usuario);
+
+        try {
+            // 1. Cadastra o usuário
+            Usuario usuario = service.cadastrarUsuario(dto);
+
+            // 2. Gera o token JWT automaticamente após o cadastro
+            String token = service.autenticar(new LoginDTO(dto.getEmail(), dto.getSenha()));
+
+            log.info("[POST] - Usuário cadastrado com ID: {} e email: {}", usuario.getId(), usuario.getEmail());
+
+            // 3. Retorna os dados do usuário + token
+            return ResponseEntity.ok(Map.of(
+                    "id", usuario.getId(),
+                    "email", usuario.getEmail(),
+                    "token", token
+            ));
+
+        } catch (ResponseStatusException ex) {
+            log.error("[POST] - Erro ao cadastrar usuário: {}", ex.getReason());
+            return ResponseEntity.status(ex.getStatusCode()).body(Map.of(
+                    "status", ex.getStatusCode().value(),
+                    "error",  ex.getStatusCode().toString(),
+                    "message", ex.getReason()
+            ));
+        }
     }
 
     /**

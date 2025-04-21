@@ -80,6 +80,10 @@ public class SecurityConfig {
                         // Allows public access to password recovery endpoints
                         .requestMatchers("/api/recover/**").permitAll()
 
+                        // Permite acesso publico aos endpoints de status da api
+                        .requestMatchers("/api/health").permitAll()
+
+
                         // Todas as demais requisições requerem autenticação
                         // All other requests require authentication
                         .anyRequest().authenticated()
