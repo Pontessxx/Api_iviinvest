@@ -70,7 +70,7 @@ public class AuthController {
                     content = @Content(
                             mediaType = "application/json",
                             examples = @ExampleObject(
-                                    value = "{\"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\"}"
+                                    value = "{\"token\": \"eyJhbGciOiJIUzI1NiIs...\", \"email\": \"usuario@exemplo.com\"}"
                             )
                     )
             ),
@@ -118,7 +118,11 @@ public class AuthController {
             String token = service.autenticar(dto);
 
             log.info("SUCCESSFUL LOGIN FOR USER: {}", dto.getEmail());
-            return ResponseEntity.ok(Map.of("token", token));
+            // Retorna token + email no response
+            return ResponseEntity.ok(Map.of(
+                    "token", token,
+                    "email", dto.getEmail()
+            ));
 
         } catch (ResponseStatusException ex) {
             // Tratamento de erros específicos com códigos de status conhecidos
