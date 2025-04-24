@@ -89,11 +89,14 @@ public class RecoveryController {
     })
     @GetMapping("/token/{email}")
     public ResponseEntity<?> generateToken(@PathVariable @Email String email) {
-        log.info("[GET] - Solicitação de token para: {}", email);
+
+        String maskedEmail = email.replaceAll("(^.).*(@.*$)", "$1***$2");
+
+        log.info("[GET] - Solicitação de token para: {}", maskedEmail);
 
         try {
             service.gerarTokenReset(email);
-            log.info("[GET] - Token processado para: {}", email);
+            log.info("[GET] - Token processado para: {}", maskedEmail);
 
             // Por segurança, sempre retorna mensagem positiva mesmo para e-mails não cadastrados
             // For security, always returns positive message even for unregistered emails
@@ -102,7 +105,7 @@ public class RecoveryController {
                     "message", "Se este e-mail estiver cadastrado, enviaremos instruções para redefinir sua senha."
             ));
         } catch (ResponseStatusException ex) {
-            log.warn("[GET] - E-mail não encontrado (mas resposta mascarada): {}", email);
+            log.warn("[GET] - E-mail não encontrado (mas resposta mascarada): {}", maskedEmail);
 
             // Mantém a mesma resposta por questões de segurança
             // Keeps the same response for security reasons
@@ -111,7 +114,7 @@ public class RecoveryController {
                     "message", "Se este e-mail estiver cadastrado, enviaremos instruções para redefinir sua senha."
             ));
         } catch (Exception ex) {
-            log.error("[GET] - Erro inesperado para: {} - Erro: {}", email, ex.getMessage(), ex);
+            log.error("[GET] - Erro inesperado para: {} - Erro: {}", maskedEmail, ex.getMessage(), ex);
             return ResponseEntity.internalServerError().body(Map.of(
                     "status", "500",
                     "error", "INTERNAL_SERVER_ERROR",

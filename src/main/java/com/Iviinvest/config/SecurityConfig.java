@@ -83,6 +83,11 @@ public class SecurityConfig {
                         // Permite acesso publico aos endpoints de status da api
                         .requestMatchers("/api/health").permitAll()
 
+                        // Permite acesso publico aos endpoints de 2FA da api
+                        // Allows public access to 2FA endpoints
+                        .requestMatchers("/api/auth/2fa/send").permitAll()
+                        .requestMatchers("/api/auth/2fa/verify").permitAll()
+
 
                         // Todas as demais requisições requerem autenticação
                         // All other requests require authentication

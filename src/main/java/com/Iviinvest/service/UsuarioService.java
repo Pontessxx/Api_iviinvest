@@ -356,4 +356,10 @@ public class UsuarioService {
         log.info("[PERFIL] Perfil atualizado para: {}", email);
         return repository.save(usuario);
     }
+
+
+    public Usuario findByEmail(String email) {
+        return repository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado: " + email));
+    }
 }

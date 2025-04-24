@@ -110,14 +110,17 @@ public class AuthController {
     })
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody @Valid LoginDTO dto) {
-        log.info("---------- [POST] - LOGIN ATTEMPT FOR: {} ----------", dto.getEmail());
+
+        String maskedEmail = dto.getEmail().replaceAll("(^.).*(@.*$)", "$1***$2");
+
+        log.info("---------- [POST] - LOGIN ATTEMPT FOR: {} ----------", maskedEmail);
 
         try {
             // Autentica o usuário usando o serviço e obtém o token JWT
             // Authenticates user using service and gets JWT token
             String token = service.autenticar(dto);
 
-            log.info("SUCCESSFUL LOGIN FOR USER: {}", dto.getEmail());
+            log.info("SUCCESSFUL LOGIN FOR USER: {}", maskedEmail);
             // Retorna token + email no response
             return ResponseEntity.ok(Map.of(
                     "token", token,
@@ -132,12 +135,12 @@ public class AuthController {
             // Log apropriado baseado no tipo de erro
             // Appropriate logging based on error type
             if (ex.getStatusCode().value() == 401) {
-                log.warn("INVALID PASSWORD ATTEMPT FOR EMAIL: {}", dto.getEmail());
+                log.warn("INVALID PASSWORD ATTEMPT FOR EMAIL: {}", maskedEmail);
             } else if (ex.getStatusCode().value() == 404) {
-                log.warn("LOGIN ATTEMPT WITH UNREGISTERED EMAIL: {}", dto.getEmail());
+                log.warn("LOGIN ATTEMPT WITH UNREGISTERED EMAIL: {}", maskedEmail);
             } else {
                 log.error("UNHANDLED LOGIN ERROR: status={}, email={}, reason={}",
-                        ex.getStatusCode().value(), dto.getEmail(), errorMessage);
+                        ex.getStatusCode().value(), maskedEmail, errorMessage);
             }
 
             // Retorna resposta de erro estruturada
