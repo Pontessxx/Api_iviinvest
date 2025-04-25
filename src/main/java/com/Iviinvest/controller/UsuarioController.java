@@ -309,42 +309,42 @@ public class UsuarioController {
      * @param userDetails Authenticated user details
      * @return ResponseEntity with the investor profile
      */
-//    @Operation(
-//            summary = "Buscar perfil de investidor",
-//            description = "Recupera o perfil de investidor do usuário autenticado."
-//    )
-//    @ApiResponses(value = {
-//            @ApiResponse(
-//                    responseCode = "200",
-//                    description = "Perfil de investidor retornado com sucesso",
-//                    content = @Content(
-//                            mediaType = "application/json",
-//                            examples = @ExampleObject(
-//                                    value = "{\"perfilInvestidor\": \"Agressivo\"}"
-//                            )
-//                    )
-//            ),
-//            @ApiResponse(
-//                    responseCode = "404",
-//                    description = "Usuário não encontrado",
-//                    content = @Content(
-//                            mediaType = "application/json",
-//                            schema = @Schema(implementation = ErrorResponseDTO.class),
-//                            examples = @ExampleObject(
-//                                    value = "{\"status\": \"404\", \"error\": \"404 NOT_FOUND\", \"message\": \"Usuário não encontrado\"}"
-//                            )
-//                    )
-//            )
-//    })
-//    @GetMapping("/perfil")
-//    public ResponseEntity<PerfilDTO> buscarPerfil(
-//            @AuthenticationPrincipal org.springframework.security.core.userdetails.User userDetails) {
-//        String email = userDetails.getUsername();
-//        log.info("[GET] - Buscando perfil para usuário: {}", email);
-//        String perfil = service.buscarPerfilInvestidorPorEmail(email);
-//        log.info("[GET] - Perfil encontrado: {} para usuário: {}", perfil, email);
-//        return ResponseEntity.ok(new PerfilDTO(perfil));
-//    }
+    @Operation(
+            summary = "Buscar perfil de investidor",
+            description = "Recupera o perfil de investidor do usuário autenticado."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Perfil de investidor retornado com sucesso",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    value = "{\"perfilInvestidor\": \"Agressivo\"}"
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Usuário não encontrado",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponseDTO.class),
+                            examples = @ExampleObject(
+                                    value = "{\"status\": \"404\", \"error\": \"404 NOT_FOUND\", \"message\": \"Usuário não encontrado\"}"
+                            )
+                    )
+            )
+    })
+    @GetMapping("/perfil")
+    public ResponseEntity<PerfilDTO> buscarPerfil(
+            @AuthenticationPrincipal org.springframework.security.core.userdetails.User userDetails) {
+        String email = userDetails.getUsername();
+        log.info("[GET] - Buscando perfil para usuário: {}", email);
+        String perfil = service.buscarPerfilInvestidorPorEmail(email);
+        log.info("[GET] - Perfil encontrado: {} para usuário: {}", perfil, email);
+        return ResponseEntity.ok(new PerfilDTO(perfil));
+    }
 
     /**
      * Atualiza o perfil de investidor do usuário autenticado.

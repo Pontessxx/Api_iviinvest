@@ -70,7 +70,7 @@ public class AuthController {
                     content = @Content(
                             mediaType = "application/json",
                             examples = @ExampleObject(
-                                    value = "{\"token\": \"eyJhbGciOiJIUzI1NiIs...\", \"email\": \"usuario@exemplo.com\"}"
+                                    value = "{\"email\": \"usuario@exemplo.com\"}"
                             )
                     )
             ),
@@ -123,7 +123,6 @@ public class AuthController {
             log.info("SUCCESSFUL LOGIN FOR USER: {}", maskedEmail);
             // Retorna token + email no response
             return ResponseEntity.ok(Map.of(
-                    "token", token,
                     "email", dto.getEmail()
             ));
 
