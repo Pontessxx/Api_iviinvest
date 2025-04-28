@@ -261,12 +261,12 @@ public class UsuarioController {
     /**
      * Remove um usuário do sistema.
      *
-     * @param id ID do usuário a ser removido
+     * @param usuario id ID do usuário a ser removido
      * @return ResponseEntity vazio (204) em caso de sucesso
      *
      * Removes a user from the system.
      *
-     * @param id ID of the user to be removed
+     * @param usuario id ID of the user to be removed
      * @return Empty ResponseEntity (204) on success
      */
     @Operation(
@@ -290,11 +290,15 @@ public class UsuarioController {
                     )
             )
     })
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletar(@PathVariable Long id) {
-        log.info("[DELETE] - Solicitada exclusão do usuário ID: {}", id);
-        service.deletar(id);
-        log.info("[DELETE] - Usuário excluído com sucesso: ID {}", id);
+    @DeleteMapping
+    public ResponseEntity<Void> deletarConta(@AuthenticationPrincipal org.springframework.security.core.userdetails.User userDetails) {
+        String email = userDetails.getUsername(); // pega o email do token
+        log.info("[DELETE] - Solicitada exclusão para usuário: {}", email);
+
+        Usuario usuario = service.findByEmail(email);
+        service.deletar(usuario.getId());
+
+        log.info("[DELETE] - Conta do usuário excluída: {}", email);
         return ResponseEntity.noContent().build();
     }
 

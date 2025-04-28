@@ -35,3 +35,6 @@ build/
 ### Seguranca ###
 .env
 .env.*
+
+logs/
+*.log
