@@ -75,17 +75,6 @@ public class RecoveryController {
                             )
                     )
             ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "Usuário não encontrado (logicamente tratado como 200 por segurança)",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorResponseDTO.class),
-                            examples = @ExampleObject(
-                                    value = "{\"status\": \"404\", \"error\": \"404 NOT_FOUND\", \"message\": \"Usuário não encontrado\"}"
-                            )
-                    )
-            )
     })
     @GetMapping("/token/{email}")
     public ResponseEntity<?> generateToken(@PathVariable @Email String email) {
