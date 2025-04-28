@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -130,7 +131,8 @@ public class UsuarioController {
      */
     @Operation(
             summary = "Listar todos os usuários",
-            description = "Retorna uma lista com informações públicas de todos os usuários cadastrados."
+            description = "Retorna uma lista com informações públicas de todos os usuários cadastrados.",
+            security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponses(value = {
             @ApiResponse(
@@ -159,7 +161,8 @@ public class UsuarioController {
      */
     @Operation(
             summary = "Buscar usuário por ID",
-            description = "Recupera informações públicas de um usuário específico baseado no ID."
+            description = "Recupera informações públicas de um usuário específico baseado no ID.",
+            security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponses(value = {
             @ApiResponse(
@@ -261,17 +264,17 @@ public class UsuarioController {
     /**
      * Remove um usuário do sistema.
      *
-     * @param usuario id ID do usuário a ser removido
+     * @param usuario token a ser removido
      * @return ResponseEntity vazio (204) em caso de sucesso
      *
      * Removes a user from the system.
      *
-     * @param usuario id ID of the user to be removed
+     * @param usuario token of the user to be removed
      * @return Empty ResponseEntity (204) on success
      */
     @Operation(
-            summary = "Excluir usuário por ID",
-            description = "Remove permanentemente um usuário do sistema baseado no ID."
+            summary = "Excluir usuário por Token",
+            description = "Remove permanentemente um usuário do sistema baseado no token autenticado."
     )
     @ApiResponses(value = {
             @ApiResponse(
@@ -315,7 +318,8 @@ public class UsuarioController {
      */
     @Operation(
             summary = "Buscar perfil de investidor",
-            description = "Recupera o perfil de investidor do usuário autenticado."
+            description = "Recupera o perfil de investidor do usuário autenticado.",
+            security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponses(value = {
             @ApiResponse(

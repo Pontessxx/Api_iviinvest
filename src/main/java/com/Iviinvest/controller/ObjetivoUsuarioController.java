@@ -108,12 +108,12 @@ public class ObjetivoUsuarioController {
      * @param userDetails Dados do usuário autenticado
      * @return Objetivo de investimento ou mensagem de erro
      */
-    @Operation(summary = "Buscar dados de objetivo do usuário",
-    security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Buscar último objetivo do usuário",
+            security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
-                    description = "Dados encontrados",
+                    description = "Último objetivo encontrado",
                     content = @Content(
                             mediaType = "application/json",
                             examples = @ExampleObject(
@@ -131,7 +131,7 @@ public class ObjetivoUsuarioController {
             ),
             @ApiResponse(
                     responseCode = "404",
-                    description = "Objetivo não encontrado",
+                    description = "Nenhum objetivo encontrado",
                     content = @Content(
                             mediaType = "application/json",
                             examples = @ExampleObject(
@@ -141,15 +141,15 @@ public class ObjetivoUsuarioController {
             )
     })
     @GetMapping
-    public ResponseEntity<?> buscarObjetivo(
+    public ResponseEntity<?> buscarUltimoObjetivo(
             @AuthenticationPrincipal org.springframework.security.core.userdetails.User userDetails) {
         String email = userDetails.getUsername();
-        log.info("[GET] - Solicitada busca de objetivo para usuário: {}", email);
+        log.info("[GET] - Solicitada busca do último objetivo para usuário: {}", email);
 
         try {
             Usuario usuario = usuarioService.findByEmail(email);
 
-            return objetivoService.buscarPorUsuario(usuario)
+            return objetivoService.buscarUltimoPorUsuario(usuario)
                     .map(objetivo -> {
                         try {
                             List<String> setoresEvitar = objectMapper.readValue(objetivo.getSetoresEvitar(), new TypeReference<>() {});
@@ -162,7 +162,7 @@ public class ObjetivoUsuarioController {
                             dto.setLiquidez(objetivo.getLiquidez());
                             dto.setSetoresEvitar(setoresEvitar);
 
-                            log.info("[GET] - Objetivo encontrado e retornado para usuário: {}", email);
+                            log.info("[GET] - Último objetivo encontrado e retornado para usuário: {}", email);
                             return ResponseEntity.ok(dto);
 
                         } catch (Exception ex) {
@@ -184,19 +184,89 @@ public class ObjetivoUsuarioController {
                     });
 
         } catch (ResponseStatusException ex) {
-            log.error("[GET] - Falha ao buscar objetivo para usuário {}: {}", email, ex.getReason());
+            log.error("[GET] - Falha ao buscar último objetivo para usuário {}: {}", email, ex.getReason());
             return ResponseEntity.status(ex.getStatusCode()).body(Map.of(
                     "status", String.valueOf(ex.getStatusCode().value()),
                     "error", ex.getStatusCode().toString(),
                     "message", ex.getReason() != null ? ex.getReason() : "Erro inesperado"
             ));
         } catch (Exception ex) {
-            log.error("[GET] - Erro interno ao buscar objetivo para usuário {}: {}", email, ex.getMessage(), ex);
+            log.error("[GET] - Erro interno ao buscar último objetivo para usuário {}: {}", email, ex.getMessage(), ex);
             return ResponseEntity.internalServerError().body(Map.of(
                     "status", "500",
                     "error", "INTERNAL_SERVER_ERROR",
-                    "message", "Erro inesperado ao buscar objetivo."
+                    "message", "Erro inesperado ao buscar último objetivo."
             ));
         }
     }
+
+    /**
+     * Lista o histórico completo de objetivos de investimento do usuário.
+     *
+     * @param userDetails Dados do usuário autenticado
+     * @return Lista de Objetivos de investimento
+     */
+    @Operation(summary = "Listar histórico completo de objetivos do usuário",
+            security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Histórico encontrado",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    value = "[{\"objetivo\":\"Aposentadoria\",\"prazo\":\"15+ anos\",\"valorInicial\":20000.0,\"aporteMensal\":500.0,\"patrimonioAtual\":50000.0,\"liquidez\":\"Baixa\",\"setoresEvitar\":[\"Criptomoedas\"]}]"
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Nenhum objetivo encontrado",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    value = "{\"status\": \"404\", \"error\": \"NOT_FOUND\", \"message\": \"Nenhum objetivo encontrado para o usuário.\"}"
+                            )
+                    )
+            )
+    })
+    @GetMapping("/historico")
+    public ResponseEntity<?> listarHistoricoObjetivos(
+            @AuthenticationPrincipal org.springframework.security.core.userdetails.User userDetails) {
+        String email = userDetails.getUsername();
+        log.info("[GET] - Solicitada listagem do histórico de objetivos para usuário: {}", email);
+
+        try {
+            Usuario usuario = usuarioService.findByEmail(email);
+            List<ObjetivoUsuarioDTO> objetivos = objetivoService.buscarHistoricoPorUsuario(usuario);
+
+            if (objetivos.isEmpty()) {
+                log.warn("[GET] - Nenhum objetivo encontrado para usuário: {}", email);
+                return ResponseEntity.status(404).body(Map.of(
+                        "status", "404",
+                        "error", "NOT_FOUND",
+                        "message", "Nenhum objetivo encontrado para o usuário."
+                ));
+            }
+
+            log.info("[GET] - {} objetivos retornados para histórico do usuário: {}", objetivos.size(), email);
+            return ResponseEntity.ok(objetivos);
+
+        } catch (ResponseStatusException ex) {
+            log.error("[GET] - Falha ao buscar histórico para usuário {}: {}", email, ex.getReason());
+            return ResponseEntity.status(ex.getStatusCode()).body(Map.of(
+                    "status", String.valueOf(ex.getStatusCode().value()),
+                    "error", ex.getStatusCode().toString(),
+                    "message", ex.getReason() != null ? ex.getReason() : "Erro inesperado"
+            ));
+        } catch (Exception ex) {
+            log.error("[GET] - Erro interno ao buscar histórico para usuário {}: {}", email, ex.getMessage(), ex);
+            return ResponseEntity.internalServerError().body(Map.of(
+                    "status", "500",
+                    "error", "INTERNAL_SERVER_ERROR",
+                    "message", "Erro inesperado ao buscar histórico de objetivos."
+            ));
+        }
+    }
+
 }

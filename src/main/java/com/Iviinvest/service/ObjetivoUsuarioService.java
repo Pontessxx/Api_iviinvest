@@ -1,12 +1,15 @@
 package com.Iviinvest.service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.Iviinvest.dto.ObjetivoUsuarioDTO;
 import com.Iviinvest.model.ObjetivoUsuario;
 import com.Iviinvest.model.Usuario;
 import com.Iviinvest.repository.ObjetivoUsuarioRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -18,6 +21,11 @@ public class ObjetivoUsuarioService {
     public ObjetivoUsuarioService(ObjetivoUsuarioRepository repository) {
         this.repository = repository;
     }
+
+    public ObjetivoUsuario salvarExistente(ObjetivoUsuario objetivo) {
+        return repository.save(objetivo);
+    }
+
 
     public ObjetivoUsuario salvarObjetivo(Usuario usuario, ObjetivoUsuarioDTO dto) {
         ObjetivoUsuario objetivo = new ObjetivoUsuario();
@@ -38,7 +46,32 @@ public class ObjetivoUsuarioService {
         return repository.save(objetivo);
     }
 
-    public Optional<ObjetivoUsuario> buscarPorUsuario(Usuario usuario) {
-        return repository.findByUsuario(usuario);
+    public Optional<ObjetivoUsuario> buscarUltimoPorUsuario(Usuario usuario) {
+        return repository.findFirstByUsuarioOrderByIdDesc(usuario);
+    }
+
+    public List<ObjetivoUsuarioDTO> buscarHistoricoPorUsuario(Usuario usuario) {
+        List<ObjetivoUsuario> objetivos = repository.findAllByUsuarioOrderByIdDesc(usuario);
+
+        return objetivos.stream().map(objetivo -> {
+            try {
+                List<String> setoresEvitar = objectMapper.readValue(objetivo.getSetoresEvitar(), new TypeReference<>() {});
+                ObjetivoUsuarioDTO dto = new ObjetivoUsuarioDTO();
+                dto.setObjetivo(objetivo.getObjetivo());
+                dto.setPrazo(objetivo.getPrazo());
+                dto.setValorInicial(objetivo.getValorInicial());
+                dto.setAporteMensal(objetivo.getAporteMensal());
+                dto.setPatrimonioAtual(objetivo.getPatrimonioAtual());
+                dto.setLiquidez(objetivo.getLiquidez());
+                dto.setSetoresEvitar(setoresEvitar);
+                return dto;
+            } catch (Exception e) {
+                throw new RuntimeException("Erro ao converter setores evitados", e);
+            }
+        }).toList();
+    }
+    public ObjetivoUsuario buscarPorId(Long id) {
+        return repository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(org.springframework.http.HttpStatus.NOT_FOUND, "Objetivo não encontrado"));
     }
 }

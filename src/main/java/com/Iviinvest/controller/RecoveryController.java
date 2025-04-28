@@ -11,21 +11,16 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Map;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Controller responsável pelo gerenciamento de recuperação de senha.
- * <p>
- * Oferece endpoints para geração de tokens de recuperação e redefinição de senha.
- * <p>
- * Controller responsible for password recovery management.
- * Provides endpoints for recovery token generation and password reset.
  */
 @RestController
 @RequestMapping("/api/recover")
@@ -35,39 +30,24 @@ public class RecoveryController {
 
     private final UsuarioService service;
 
-    /**
-     * Construtor para injeção de dependência do serviço de usuário.
-     *
-     * @param service O serviço de usuário a ser injetado
-     *
-     * Constructor for dependency injection of the user service.
-     *
-     * @param service The user service to be injected
-     */
     public RecoveryController(UsuarioService service) {
         this.service = service;
     }
 
     /**
-     * Gera e envia um token para redefinição de senha para o e-mail fornecido.
+     * Gera e envia um token de redefinição de senha para o e-mail fornecido.
      *
-     * @param email E-mail do usuário para recuperação de senha (validado como formato de e-mail)
-     * @return ResponseEntity com mensagem de sucesso ou erro
-     *
-     * Generates and sends a password reset token to the provided email.
-     *
-     * @param email User email for password recovery (validated as email format)
-     * @return ResponseEntity with success or error message
+     * @param request Mapa contendo o campo "email"
+     * @return ResponseEntity com mensagem de sucesso
      */
     @Operation(
-            summary = "Gerar token para redefinir senha",
-            description = "Gera um token único e envia por e-mail para permitir a redefinição de senha. "
-                    + "Por segurança, sempre retorna sucesso mesmo para e-mails não cadastrados."
+            summary = "Solicitar envio de token para redefinição de senha",
+            description = "Recebe um e-mail e, se cadastrado, envia um token para redefinir a senha. Sempre retorna sucesso por segurança."
     )
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
-                    description = "Solicitação processada com sucesso",
+                    description = "Solicitação processada (token enviado, se o e-mail existir)",
                     content = @Content(
                             mediaType = "application/json",
                             examples = @ExampleObject(
@@ -75,35 +55,43 @@ public class RecoveryController {
                             )
                     )
             ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Erro interno ao tentar gerar o token",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    value = "{\"status\": \"500\", \"error\": \"INTERNAL_SERVER_ERROR\", \"message\": \"Ocorreu um erro ao tentar enviar o e-mail de recuperação.\"}"
+                            )
+                    )
+            )
     })
-    @GetMapping("/token/{email}")
-    public ResponseEntity<?> generateToken(@PathVariable @Email String email) {
-
+    @PostMapping("/token")
+    public ResponseEntity<?> generateToken(@RequestBody Map<String, @Email String> request) {
+        String email = request.get("email");
         String maskedEmail = email.replaceAll("(^.).*(@.*$)", "$1***$2");
 
-        log.info("[GET] - Solicitação de token para: {}", maskedEmail);
+        log.info("[POST] - Solicitação de token para redefinição de senha para: {}", maskedEmail);
 
         try {
             service.gerarTokenReset(email);
-            log.info("[GET] - Token processado para: {}", maskedEmail);
+            log.info("[POST] - Token processado para: {}", maskedEmail);
 
-            // Por segurança, sempre retorna mensagem positiva mesmo para e-mails não cadastrados
-            // For security, always returns positive message even for unregistered emails
             return ResponseEntity.ok(Map.of(
                     "status", "200",
                     "message", "Se este e-mail estiver cadastrado, enviaremos instruções para redefinir sua senha."
             ));
-        } catch (ResponseStatusException ex) {
-            log.warn("[GET] - E-mail não encontrado (mas resposta mascarada): {}", maskedEmail);
 
-            // Mantém a mesma resposta por questões de segurança
-            // Keeps the same response for security reasons
+        } catch (ResponseStatusException ex) {
+            log.warn("[POST] - Erro lógico durante envio de token (mas resposta mascarada): {}", maskedEmail);
+
+            // Sempre retorna 200 para não revelar existência do email
             return ResponseEntity.ok(Map.of(
                     "status", "200",
                     "message", "Se este e-mail estiver cadastrado, enviaremos instruções para redefinir sua senha."
             ));
         } catch (Exception ex) {
-            log.error("[GET] - Erro inesperado para: {} - Erro: {}", maskedEmail, ex.getMessage(), ex);
+            log.error("[POST] - Erro inesperado para {}: {}", maskedEmail, ex.getMessage(), ex);
             return ResponseEntity.internalServerError().body(Map.of(
                     "status", "500",
                     "error", "INTERNAL_SERVER_ERROR",
@@ -117,15 +105,10 @@ public class RecoveryController {
      *
      * @param payload DTO contendo o token e a nova senha
      * @return ResponseEntity com mensagem de sucesso ou erro
-     *
-     * Resets user password using a valid token.
-     *
-     * @param payload DTO containing the token and new password
-     * @return ResponseEntity with success or error message
      */
     @Operation(
-            summary = "Redefinir senha com token",
-            description = "Permite a alteração da senha mediante apresentação de um token válido de recuperação."
+            summary = "Redefinir senha usando token",
+            description = "Permite redefinir a senha informando o token recebido no e-mail."
     )
     @ApiResponses(value = {
             @ApiResponse(
@@ -143,30 +126,28 @@ public class RecoveryController {
                     description = "Token inválido ou expirado",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorResponseDTO.class),
                             examples = @ExampleObject(
-                                    value = "{\"status\": \"400\", \"error\": \"400 BAD_REQUEST\", \"message\": \"Token inválido\"}"
+                                    value = "{\"status\": \"400\", \"error\": \"BAD_REQUEST\", \"message\": \"Token inválido\"}"
                             )
                     )
             )
     })
     @PutMapping("/password")
     public ResponseEntity<?> resetPassword(@RequestBody @Valid ResetPasswordDTO payload) {
-        log.info("[PUT] - Solicitação de redefinição com token: {}",
-                payload.getToken().substring(0, 4) + "..."); // Log parcial do token por segurança
+        log.info("[PUT] - Solicitação de redefinição de senha com token: {}...", payload.getToken().substring(0, 4));
 
         try {
             service.redefinirSenha(payload.getToken(), payload.getNewPassword());
-            log.info("[PUT] - Senha alterada com sucesso para o token fornecido");
+            log.info("[PUT] - Senha alterada com sucesso para o token informado");
             return ResponseEntity.ok(Map.of("message", "Senha redefinida com sucesso"));
+
         } catch (ResponseStatusException ex) {
             String motivo = ex.getReason() != null ? ex.getReason() : "Erro inesperado";
 
             if (ex.getStatusCode().value() == 400) {
-                log.warn("[PUT] - Token inválido/expirado: {}",
-                        payload.getToken().substring(0, 4) + "...");
+                log.warn("[PUT] - Token inválido ou expirado: {}...", payload.getToken().substring(0, 4));
             } else {
-                log.error("[PUT] - Erro durante redefinição: {}", motivo);
+                log.error("[PUT] - Erro ao redefinir senha: {}", motivo);
             }
 
             return ResponseEntity.status(ex.getStatusCode()).body(Map.of(
