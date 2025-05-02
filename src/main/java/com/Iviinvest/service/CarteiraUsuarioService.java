@@ -23,4 +23,9 @@ public class CarteiraUsuarioService {
     public Optional<CarteiraUsuario> buscarPorObjetivo(ObjetivoUsuario objetivoUsuario) {
         return repository.findByObjetivoUsuario(objetivoUsuario);
     }
+
+    public void excluir(CarteiraUsuario carteira) {
+        repository.delete(carteira);
+    }
+
 }
