@@ -48,7 +48,8 @@ public class ObjetivoUsuarioController {
      * @param dto Dados do objetivo de investimento
      * @return Mensagem de sucesso ou erro
      */
-    @Operation(summary = "Salvar dados de objetivo do usuário")
+    @Operation(summary = "Salvar dados de objetivo do usuário",
+            security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
