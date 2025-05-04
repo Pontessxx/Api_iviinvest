@@ -31,6 +31,9 @@ public class CarteiraUsuario {
     private String carteiraAgressivaJson; // JSON bruto da carteira agressiva
 
 
+    @Column
+    private String carteiraSelecionada;
+
     // ============== GETTERS E SETTERS ==============
     // ============== GETTERS AND SETTERS ==============
 
@@ -72,5 +75,13 @@ public class CarteiraUsuario {
 
     public void setCarteiraAgressivaJson(String carteiraAgressivaJson) {
         this.carteiraAgressivaJson = carteiraAgressivaJson;
+    }
+
+    public String getCarteiraSelecionada() {
+        return carteiraSelecionada;
+    }
+
+    public void setCarteiraSelecionada(String carteiraSelecionada) {
+        this.carteiraSelecionada = carteiraSelecionada;
     }
 }

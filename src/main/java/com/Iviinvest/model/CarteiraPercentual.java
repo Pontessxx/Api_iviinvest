@@ -17,6 +17,9 @@ public class CarteiraPercentual {
     @ManyToOne
     private ObjetivoUsuario objetivo;
 
+    @Column(nullable = false)
+    private String tipoCarteira;
+
 
     public Long getId() {
         return id;
@@ -56,5 +59,13 @@ public class CarteiraPercentual {
 
     public void setObjetivo(ObjetivoUsuario objetivo) {
         this.objetivo = objetivo;
+    }
+
+    public String getTipoCarteira() {
+        return tipoCarteira;
+    }
+
+    public void setTipoCarteira(String tipoCarteira) {
+        this.tipoCarteira = tipoCarteira;
     }
 }
