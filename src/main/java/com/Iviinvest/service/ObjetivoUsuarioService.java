@@ -36,6 +36,7 @@ public class ObjetivoUsuarioService {
         objetivo.setAporteMensal(dto.getAporteMensal());
         objetivo.setPatrimonioAtual(dto.getPatrimonioAtual());
         objetivo.setLiquidez(dto.getLiquidez());
+        objetivo.setDataCriacao(dto.getDataCriacao());
 
         try {
             objetivo.setSetoresEvitar(objectMapper.writeValueAsString(dto.getSetoresEvitar()));
@@ -64,6 +65,7 @@ public class ObjetivoUsuarioService {
                 dto.setPatrimonioAtual(objetivo.getPatrimonioAtual());
                 dto.setLiquidez(objetivo.getLiquidez());
                 dto.setSetoresEvitar(setoresEvitar);
+                dto.setDataCriacao(dto.getDataCriacao());
                 return dto;
             } catch (Exception e) {
                 throw new RuntimeException("Erro ao converter setores evitados", e);

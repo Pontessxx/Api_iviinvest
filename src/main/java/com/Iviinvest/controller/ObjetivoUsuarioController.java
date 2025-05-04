@@ -162,6 +162,7 @@ public class ObjetivoUsuarioController {
                             dto.setPatrimonioAtual(objetivo.getPatrimonioAtual());
                             dto.setLiquidez(objetivo.getLiquidez());
                             dto.setSetoresEvitar(setoresEvitar);
+                            dto.setDataCriacao(objetivo.getDataCriacao());
 
                             log.info("[GET] - Último objetivo encontrado e retornado para usuário: {}", email);
                             return ResponseEntity.ok(dto);

@@ -1,8 +1,12 @@
 package com.Iviinvest.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
+
+import java.time.LocalDate;
 
 @Entity
 @Getter
@@ -21,11 +25,19 @@ public class ObjetivoUsuario {
 
     // Campos do formulário
     private String objetivo;
-    private String prazo;
+
+    @Column(nullable = false)
+    @Min(1)
+    private Integer prazo;
+
     private Double valorInicial;
     private Double aporteMensal;
     private Double patrimonioAtual;
     private String liquidez;
+
+    @CreationTimestamp
+    @Column(name = "data_criacao", nullable = false, updatable = false)
+    private LocalDate dataCriacao;
 
     @Column(length = 1000)
     private String setoresEvitar; // Armazena como JSON String
@@ -57,11 +69,11 @@ public class ObjetivoUsuario {
         this.objetivo = objetivo;
     }
 
-    public String getPrazo() {
+    public Integer getPrazo() {
         return prazo;
     }
 
-    public void setPrazo(String prazo) {
+    public void setPrazo(Integer prazo) {
         this.prazo = prazo;
     }
 
@@ -103,5 +115,13 @@ public class ObjetivoUsuario {
 
     public void setSetoresEvitar(String setoresEvitar) {
         this.setoresEvitar = setoresEvitar;
+    }
+
+    public LocalDate getDataCriacao() {
+        return dataCriacao;
+    }
+
+    public void setDataCriacao(LocalDate dataCriacao) {
+        this.dataCriacao = dataCriacao;
     }
 }
