@@ -87,6 +87,7 @@ public class IAService {
         - A soma total deve ser 100%%.
         - Não precisa incluir todos os segmentos se não for recomendado pelo perfil.
         - Não inclua explicações, apenas retorne o JSON com a distribuição percentual ideal.
+        - Não recomende de forma alguma BCFF11,
         - as chaves do JSON é conservadora e agressiva assim como no formato abaixo.
         
         Formato:

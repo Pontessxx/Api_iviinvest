@@ -1,5 +1,6 @@
 package com.Iviinvest.controller;
 
+import com.Iviinvest.dto.AtualizaDistribuicaoDTO;
 import com.Iviinvest.dto.ErrorResponseDTO;
 import com.Iviinvest.model.CarteiraUsuario;
 import com.Iviinvest.model.CarteiraPercentual;
@@ -29,6 +30,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -397,7 +399,71 @@ public class CarteiraUsuarioController {
         }
     }
 
+    @GetMapping("/percentual")
+    @Operation(summary="Buscar percentuais atuais", security=@SecurityRequirement(name="bearerAuth"))
+    public ResponseEntity<?> buscarDistribuicaoAtual(
+            @AuthenticationPrincipal org.springframework.security.core.userdetails.User userDetails) {
+        Usuario u = usuarioService.findByEmail(userDetails.getUsername());
+        ObjetivoUsuario obj = objetivoService
+                .buscarUltimoPorUsuario(u)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Objetivo não encontrado"));
 
+        // busca tudo e agrupa por tipoCarteira
+        List<CarteiraPercentual> lista = carteiraPercentualRepository
+                .findByUsuarioIdAndObjetivoId(u.getId(), obj.getId());
+
+        Map<String, Map<String,Integer>> distribPorTipo = new HashMap<>();
+        for (CarteiraPercentual cp : lista) {
+            distribPorTipo
+                    .computeIfAbsent(cp.getTipoCarteira(), t -> new HashMap<>())
+                    .put(cp.getSegmento(), cp.getPercentual());
+        }
+
+        return ResponseEntity.ok(Map.of("distribuicao", distribPorTipo));
+    }
+
+    @PutMapping("/percentual")
+    @Operation(summary="Ajustar percentuais manualmente", security=@SecurityRequirement(name="bearerAuth"))
+    public ResponseEntity<?> atualizarDistribuicao(
+            @AuthenticationPrincipal org.springframework.security.core.userdetails.User userDetails,
+            @Valid @RequestBody AtualizaDistribuicaoDTO dto) {
+
+        // 1) busca usuário e objetivo
+        Usuario u = usuarioService.findByEmail(userDetails.getUsername());
+        ObjetivoUsuario obj = objetivoService
+                .buscarUltimoPorUsuario(u)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Objetivo não encontrado"));
+
+        // 2) valida soma == 100
+        Map<String,Integer> mapa = dto.getDistribuicao();
+        int soma = mapa.values().stream().mapToInt(i->i).sum();
+        if (soma != 100) {
+            return ResponseEntity
+                    .badRequest()
+                    .body(Map.of("message", "A soma dos percentuais deve ser 100%"));
+        }
+
+        // 3) persiste apenas os segmentos que vieram
+        mapa.forEach((segmento, pct) -> {
+            CarteiraPercentual cp = carteiraPercentualRepository
+                    .findByUsuarioIdAndObjetivoIdAndTipoCarteiraAndSegmento(
+                            u.getId(), obj.getId(), dto.getTipoCarteira(), segmento)
+                    .orElse(new CarteiraPercentual());
+            cp.setUsuario(u);
+            cp.setObjetivo(obj);
+            cp.setTipoCarteira(dto.getTipoCarteira());
+            cp.setSegmento(segmento);
+            cp.setPercentual(pct);
+            carteiraPercentualRepository.save(cp);
+        });
+
+        return ResponseEntity.ok(Map.of(
+                "message", "Distribuição atualizada com sucesso",
+                "distribuicao", mapa
+        ));
+    }
 
     /**
      * DTO para receber a escolha de tipo de carteira pelo usuário.
