@@ -8,6 +8,8 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class CarteiraAtivoService {
 
@@ -62,5 +64,8 @@ public class CarteiraAtivoService {
                 carteiraAtivoRepository.save(ca);
             }
         }
+    }
+    public List<CarteiraAtivo> buscarPorObjetivo(ObjetivoUsuario objetivo) {
+        return carteiraAtivoRepository.findByObjetivoUsuario(objetivo);
     }
 }

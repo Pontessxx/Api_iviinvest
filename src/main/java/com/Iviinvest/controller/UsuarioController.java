@@ -3,6 +3,7 @@ package com.Iviinvest.controller;
 import com.Iviinvest.dto.*;
 import com.Iviinvest.model.Usuario;
 import com.Iviinvest.service.UsuarioService;
+import com.Iviinvest.util.EmailUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
@@ -296,12 +297,13 @@ public class UsuarioController {
     @DeleteMapping
     public ResponseEntity<Void> deletarConta(@AuthenticationPrincipal org.springframework.security.core.userdetails.User userDetails) {
         String email = userDetails.getUsername(); // pega o email do token
-        log.info("[DELETE] - Solicitada exclusão para usuário: {}", email);
+        String maskedEmail = EmailUtils.mask(userDetails.getUsername());
+        log.info("[DELETE] - Solicitada exclusão para usuário: {}", maskedEmail);
 
         Usuario usuario = service.findByEmail(email);
         service.deletar(usuario.getId());
 
-        log.info("[DELETE] - Conta do usuário excluída: {}", email);
+        log.info("[DELETE] - Conta do usuário excluída: {}", maskedEmail);
         return ResponseEntity.noContent().build();
     }
 
@@ -348,9 +350,10 @@ public class UsuarioController {
     public ResponseEntity<PerfilDTO> buscarPerfil(
             @AuthenticationPrincipal org.springframework.security.core.userdetails.User userDetails) {
         String email = userDetails.getUsername();
-        log.info("[GET] - Buscando perfil para usuário: {}", email);
+        String maskedEmail = EmailUtils.mask(userDetails.getUsername());
+        log.info("[GET] - Buscando perfil para usuário: {}", maskedEmail);
         String perfil = service.buscarPerfilInvestidorPorEmail(email);
-        log.info("[GET] - Perfil encontrado: {} para usuário: {}", perfil, email);
+        log.info("[GET] - Perfil encontrado: {} para usuário: {}", perfil, maskedEmail);
         return ResponseEntity.ok(new PerfilDTO(perfil));
     }
 
@@ -399,10 +402,11 @@ public class UsuarioController {
             @AuthenticationPrincipal org.springframework.security.core.userdetails.User userDetails,
             @RequestBody PerfilDTO dto) {
         String email = userDetails.getUsername();
-        log.info("[PROFILE-UPDATE] - Atualizando perfil para usuário: {}", email);
+        String maskedEmail = EmailUtils.mask(userDetails.getUsername());
+        log.info("[PROFILE-UPDATE] - Atualizando perfil para usuário: {}", maskedEmail);
         Usuario atualizado = service.atualizarPerfilInvestidorPorEmail(email, dto.getPerfilInvestidor());
         log.info("[PROFILE-UPDATE] - Perfil atualizado para: {} do usuário: {}",
-                dto.getPerfilInvestidor(), email);
+                dto.getPerfilInvestidor(), maskedEmail);
         return ResponseEntity.ok(new PerfilDTO(atualizado.getPerfilInvestidor()));
     }
 }

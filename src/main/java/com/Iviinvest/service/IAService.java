@@ -1,5 +1,6 @@
 package com.Iviinvest.service;
 
+import com.Iviinvest.model.CarteiraUsuario;
 import com.Iviinvest.model.ObjetivoUsuario;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -166,6 +167,33 @@ public class IAService {
                 objetivo.getLiquidez(),
                 objetivo.getSetoresEvitar() != null ? objetivo.getSetoresEvitar() : "[]",
                 tipoCarteira
+        );
+    }
+
+    public String montarPromptSimples(ObjetivoUsuario obj,
+                                      CarteiraUsuario cu,
+                                      String question) {
+        return """
+        Você é um assistente financeiro inteligente especializado em Quality Diversity (QD).
+
+        • Patrimônio atual investido: R$ %.2f
+        • Aporte mensal disponível:    R$ %.2f
+        • Carteira selecionada:         %s
+
+        Pergunta do usuário:
+        "%s"
+        
+                 **Instruções** \s
+                        - Responda **APENAS** com um JSON válido no formato:
+                          {
+                            "explanation": "<texto explicativo>"
+                          } \s
+            - Não inclua nenhum outro campo ou texto fora desse JSON.
+        """.formatted(
+                obj.getPatrimonioAtual(),
+                obj.getAporteMensal(),
+                cu.getCarteiraSelecionada(),
+                question
         );
     }
 }

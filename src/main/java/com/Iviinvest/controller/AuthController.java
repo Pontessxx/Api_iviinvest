@@ -3,6 +3,7 @@ package com.Iviinvest.controller;
 import com.Iviinvest.dto.ErrorResponseDTO;
 import com.Iviinvest.dto.LoginDTO;
 import com.Iviinvest.service.UsuarioService;
+import com.Iviinvest.util.EmailUtils;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -111,7 +112,7 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody @Valid LoginDTO dto) {
 
-        String maskedEmail = dto.getEmail().replaceAll("(^.).*(@.*$)", "$1***$2");
+        String maskedEmail = EmailUtils.mask(dto.getEmail());
 
         log.info("---------- [POST] - LOGIN ATTEMPT FOR: {} ----------", maskedEmail);
 

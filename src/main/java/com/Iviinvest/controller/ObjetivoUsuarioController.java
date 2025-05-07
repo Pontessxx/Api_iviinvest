@@ -4,6 +4,7 @@ import com.Iviinvest.dto.ObjetivoUsuarioDTO;
 import com.Iviinvest.model.Usuario;
 import com.Iviinvest.service.ObjetivoUsuarioService;
 import com.Iviinvest.service.UsuarioService;
+import com.Iviinvest.util.EmailUtils;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
@@ -77,24 +78,25 @@ public class ObjetivoUsuarioController {
             @AuthenticationPrincipal org.springframework.security.core.userdetails.User userDetails,
             @RequestBody @Valid ObjetivoUsuarioDTO dto) {
         String email = userDetails.getUsername();
-        log.info("[POST] - Solicitado salvamento de objetivo para usuário: {}", email);
+        String maskedEmail = EmailUtils.mask(email);
+        log.info("[POST] - Solicitado salvamento de objetivo para usuário: {}", maskedEmail);
 
         try {
             Usuario usuario = usuarioService.findByEmail(email);
             objetivoService.salvarObjetivo(usuario, dto);
 
-            log.info("[POST] - Objetivo salvo com sucesso para usuário: {}", email);
+            log.info("[POST] - Objetivo salvo com sucesso para usuário: {}", maskedEmail);
             return ResponseEntity.ok(Map.of("message", "Objetivo salvo com sucesso"));
 
         } catch (ResponseStatusException ex) {
-            log.error("[POST] - Falha ao salvar objetivo para usuário {}: {}", email, ex.getReason());
+            log.error("[POST] - Falha ao salvar objetivo para usuário {}: {}", maskedEmail, ex.getReason());
             return ResponseEntity.status(ex.getStatusCode()).body(Map.of(
                     "status", String.valueOf(ex.getStatusCode().value()),
                     "error", ex.getStatusCode().toString(),
                     "message", ex.getReason() != null ? ex.getReason() : "Erro inesperado"
             ));
         } catch (Exception ex) {
-            log.error("[POST] - Erro interno ao salvar objetivo para usuário {}: {}", email, ex.getMessage(), ex);
+            log.error("[POST] - Erro interno ao salvar objetivo para usuário {}: {}", maskedEmail, ex.getMessage(), ex);
             return ResponseEntity.internalServerError().body(Map.of(
                     "status", "500",
                     "error", "INTERNAL_SERVER_ERROR",

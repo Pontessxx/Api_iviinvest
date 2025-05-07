@@ -5,6 +5,7 @@ import com.Iviinvest.dto.TwoFactorRequestDTO;
 import com.Iviinvest.service.JwtService;
 import com.Iviinvest.service.TwoFactorService;
 import com.Iviinvest.service.UsuarioService;
+import com.Iviinvest.util.EmailUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
@@ -69,7 +70,7 @@ public class TwoFactorAuthController {
     public ResponseEntity<String> sendToken(@RequestBody TwoFactorCodeDTO dto) {
         twoFactorService.generateAndSendToken(dto.getEmail());
 
-        String maskedEmail = dto.getEmail().replaceAll("(^.).*(@.*$)", "$1***$2");
+        String maskedEmail = EmailUtils.mask(dto.getEmail());
         log.info("[2FA SEND] Código gerado para: {}", maskedEmail);
 
         return ResponseEntity.ok("Código enviado com sucesso.");
@@ -111,16 +112,17 @@ public class TwoFactorAuthController {
     @PostMapping("/verify")
     public ResponseEntity<?> verifyToken(@RequestBody TwoFactorRequestDTO dto) {
         boolean valid = twoFactorService.verifyToken(dto.getEmail(), dto.getToken());
+        String maskedEmail = EmailUtils.mask(dto.getEmail());
 
         if (!valid) {
-            log.warn("[2FA VERIFY] Código inválido ou expirado para: {}", dto.getEmail());
+            log.warn("[2FA VERIFY] Código inválido ou expirado para: {}", maskedEmail);
             return ResponseEntity.status(401).body("Código inválido ou expirado");
         }
 
         var usuario = usuarioService.findByEmail(dto.getEmail());
         String jwt = jwtService.generateToken(usuario);
 
-        log.info("[2FA VERIFY] Código validado com sucesso para: {}", dto.getEmail());
+        log.info("[2FA VERIFY] Código validado com sucesso para: {}", maskedEmail);
         return ResponseEntity.ok(Map.of("token", jwt));
     }
 }
