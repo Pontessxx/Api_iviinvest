@@ -4,6 +4,7 @@ import com.Iviinvest.model.CarteiraAtivo;
 import com.Iviinvest.model.ObjetivoUsuario;
 import com.Iviinvest.model.Usuario;
 import com.Iviinvest.repository.CarteiraAtivoRepository;
+import org.springframework.transaction.annotation.Transactional;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.stereotype.Service;
@@ -33,7 +34,10 @@ public class CarteiraAtivoService {
         for (String segmento : carteiraJson.keySet()) {
 
             // Ignora o segmento de renda fixa se necessário
-            if (segmento.equalsIgnoreCase("rendaFixa")) continue;
+            if (segmento.equalsIgnoreCase("rendaFixa")) {
+                // pula títulos de renda fixa
+                continue;
+            }
 
             JSONArray ativos = carteiraJson.getJSONArray(segmento);
             int percentualSegmento = distribuicao.getJSONObject(tipoCarteira.toLowerCase()).optInt(segmento, 0);
@@ -65,7 +69,17 @@ public class CarteiraAtivoService {
             }
         }
     }
-    public List<CarteiraAtivo> buscarPorObjetivo(ObjetivoUsuario objetivo) {
-        return carteiraAtivoRepository.findByObjetivoUsuario(objetivo);
+
+    @Transactional
+    public void deleteAllByUsuarioIdAndObjetivoId(Long usuarioId, Long objetivoId) {
+        carteiraAtivoRepository.deleteAllByUsuarioIdAndObjetivoId(usuarioId, objetivoId);
     }
+
+    public void salvar(CarteiraAtivo ativo) {
+        carteiraAtivoRepository.save(ativo);
+    }
+    public List<CarteiraAtivo> buscarPorObjetivoETipo(ObjetivoUsuario objetivo, String tipoCarteira) {
+        return carteiraAtivoRepository.findByObjetivoAndTipoCarteira(objetivo, tipoCarteira);
+    }
+
 }

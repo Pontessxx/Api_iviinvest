@@ -135,7 +135,7 @@ public class IAService {
         - Preferência de Liquidez: %s
         - Setores a evitar: %s
         
-        Gere UMA carteira de investimento %s:
+        Gere DUAS carteira de investimento %s:
         
         A composição de cada carteira deve conter ativos dos seguintes segmentos: renda fixa, ações, FIIs e criptoativos (caso compatível com o perfil).
         A quantidade de ativos em cada segmento deve ser determinada com base no perfil e objetivos do investidor,
@@ -146,15 +146,24 @@ public class IAService {
         - A composição deve refletir o alinhamento com o objetivo financeiro declarado.
         - Se o perfil ou objetivo indicar, omita categorias como criptoativos.
         - O ticker deve estar exatamente como é negociado na bolsa, por exemplo: "PETR4", "BOVA11", "KNRI11", "IRBR3".
+        - Evite PBCT11, VLOL11, RCFI11
         
         Responda SOMENTE com um JSON válido no formato abaixo, sem comentários e com a chave carteira:
         
         {
           "carteira": {
-            "rendaFixa": [...],
-            "acoes": [...],
-            "fiis": [...],
-            "cripto": [...]
+              "conservadora": {
+                "rendaFixa": [...],
+                "acoes": [...],
+                "fiis": [...],
+                "cripto": [...]
+              },
+              "agressiva": {
+                "rendaFixa": [...],
+                "acoes": [...],
+                "fiis": [...],
+                "cripto": [...]
+              }
           }
         }
         """.formatted(

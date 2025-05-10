@@ -10,5 +10,11 @@ public interface CarteiraAtivoRepository extends JpaRepository<CarteiraAtivo, Lo
     void deleteAllByUsuarioIdAndObjetivoId(Long usuarioId, Long objetivoId);
 
     // busca todos os ativos associados a um ObjetivoUsuario
-    List<CarteiraAtivo> findByObjetivoUsuario(ObjetivoUsuario objetivo);
+    List<CarteiraAtivo> findByObjetivo(ObjetivoUsuario objetivo);
+
+    List<CarteiraAtivo> findByObjetivoAndTipoCarteira(
+            ObjetivoUsuario objetivo,
+            String tipoCarteira
+    );
+
 }

@@ -1,476 +1,264 @@
 package com.Iviinvest.controller;
 
-import com.Iviinvest.dto.AtualizaDistribuicaoDTO;
-import com.Iviinvest.dto.ErrorResponseDTO;
-import com.Iviinvest.model.CarteiraUsuario;
-import com.Iviinvest.model.CarteiraPercentual;
-import com.Iviinvest.model.ObjetivoUsuario;
-import com.Iviinvest.model.Usuario;
+import com.Iviinvest.dto.CarteiraPersistRequest;
+import com.Iviinvest.dto.CarteiraSelecionadaRequest;
+import org.springframework.transaction.annotation.Transactional;
+import com.Iviinvest.model.*;
 import com.Iviinvest.repository.CarteiraPercentualRepository;
-import com.Iviinvest.service.CarteiraAtivoService;
-import com.Iviinvest.service.CarteiraUsuarioService;
 import com.Iviinvest.service.IAService;
 import com.Iviinvest.service.ObjetivoUsuarioService;
 import com.Iviinvest.service.UsuarioService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.ExampleObject;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import jakarta.validation.Valid;
-import lombok.Data;
+import com.Iviinvest.service.CarteiraUsuarioService;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
+import com.Iviinvest.service.CarteiraAtivoService;
+import com.Iviinvest.service.PrecoAtivoService;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import com.Iviinvest.dto.CarteiraResponseDTO;
+import com.Iviinvest.service.CarteiraAtivoService;
+import com.Iviinvest.service.PrecoAtivoService;
 import java.util.stream.Collectors;
 
-/**
- * Controller responsável pelo fluxo de simulação, confirmação e visualização
- * das carteiras de investimento (conservadora/agressiva) do usuário.
- */
+
+
+import java.util.*;
+
 @RestController
 @RequestMapping("/api/carteiras")
 public class CarteiraUsuarioController {
 
     private static final Logger log = LoggerFactory.getLogger(CarteiraUsuarioController.class);
 
-    private final CarteiraUsuarioService carteiraService;
+    private final IAService iaService;
     private final UsuarioService usuarioService;
     private final ObjetivoUsuarioService objetivoService;
-    private final CarteiraPercentualRepository carteiraPercentualRepository;
+    private final CarteiraPercentualRepository percentualRepo;
+    private final CarteiraUsuarioService usuarioCarteiraService;
     private final CarteiraAtivoService carteiraAtivoService;
-    private final IAService iaService;
+    private final PrecoAtivoService   precoAtivoService;
+
+
 
     public CarteiraUsuarioController(
-            CarteiraUsuarioService carteiraService,
+            IAService iaService,
             UsuarioService usuarioService,
             ObjetivoUsuarioService objetivoService,
-            CarteiraPercentualRepository carteiraPercentualRepository,
+            CarteiraPercentualRepository percentualRepo,
+            CarteiraUsuarioService usuarioCarteiraService,
             CarteiraAtivoService carteiraAtivoService,
-            IAService iaService) {
-        this.carteiraService = carteiraService;
-        this.usuarioService = usuarioService;
-        this.objetivoService = objetivoService;
-        this.carteiraPercentualRepository = carteiraPercentualRepository;
-        this.carteiraAtivoService = carteiraAtivoService;
-        this.iaService = iaService;
+            PrecoAtivoService precoAtivoService
+    ) {
+        this.iaService              = iaService;
+        this.usuarioService         = usuarioService;
+        this.objetivoService        = objetivoService;
+        this.percentualRepo         = percentualRepo;
+        this.usuarioCarteiraService = usuarioCarteiraService;
+        this.carteiraAtivoService   = carteiraAtivoService;
+        this.precoAtivoService      = precoAtivoService;
     }
+
 
     /**
-     * Simula as distribuições percentuais para as carteiras conservadora e agressiva
-     * do último objetivo do usuário autenticado.
-     *
-     * @param userDetails detalhes do usuário (extraídos do token JWT)
-     * @return 200 + mapa de distribuições, 404 se não houver objetivo,
-     *         ou 500 em caso de erro interno
+     * 1) Gera percentuais ideais (conservadora + agressiva) via IA
      */
-    @PostMapping("/simular-percentual")
-    @Operation(
-            summary = "Simular distribuições percentuais",
-            description = "Gera via IA as porcentagens de alocação para carteiras conservadora e agressiva.",
-            security = @SecurityRequirement(name = "bearerAuth")
-    )
-    @ApiResponses({
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Distribuições geradas com sucesso",
-                    content = @Content(
-                            mediaType = "application/json",
-                            examples = @ExampleObject(
-                                    value = "{\n" +
-                                            "  \"message\": \"Distribuições geradas com sucesso\",\n" +
-                                            "  \"distribuicao\": {\n" +
-                                            "    \"conservadora\": { \"fiis\": 40, \"rendaFixa\": 60 },\n" +
-                                            "    \"agressiva\":   { \"acoes\": 70, \"cripto\": 30 }\n" +
-                                            "  }\n" +
-                                            "}"
-                            )
-                    )
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "Nenhum objetivo encontrado para este usuário",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorResponseDTO.class),
-                            examples = @ExampleObject(
-                                    value = "{ \"status\": \"404\", \"error\": \"404 NOT_FOUND\", \"message\": \"Nenhum objetivo encontrado\" }"
-                            )
-                    )
-            ),
-            @ApiResponse(
-                    responseCode = "500",
-                    description = "Erro interno ao gerar distribuições",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorResponseDTO.class),
-                            examples = @ExampleObject(
-                                    value = "{ \"status\": \"500\", \"error\": \"500 INTERNAL_SERVER_ERROR\", \"message\": \"Erro ao gerar distribuições: ...\" }"
-                            )
-                    )
-            )
-    })
-    public ResponseEntity<?> simularDistribuicao(
-            @AuthenticationPrincipal org.springframework.security.core.userdetails.User userDetails) {
-
-        log.info("[POST] /api/carteiras/simular-percentual - usuário={}", userDetails.getUsername());
-        try {
-            Usuario u = usuarioService.findByEmail(userDetails.getUsername());
-            ObjetivoUsuario obj = objetivoService
-                    .buscarUltimoPorUsuario(u)
-                    .orElseThrow(() -> new ResponseStatusException(
-                            HttpStatus.NOT_FOUND, "Nenhum objetivo encontrado"));
-
-            JSONObject distrib = iaService.chamarOpenAI(iaService.gerarPromptDistribuicao(obj));
-
-            // Persiste conservadora
-            JSONObject cons = distrib.getJSONObject("conservadora");
-            cons.keySet().forEach(seg -> {
-                CarteiraPercentual cp = carteiraPercentualRepository
-                        .findByUsuarioIdAndObjetivoIdAndTipoCarteiraAndSegmento(
-                                u.getId(), obj.getId(), "conservadora", seg)
-                        .orElse(new CarteiraPercentual());
-                cp.setUsuario(u);
-                cp.setObjetivo(obj);
-                cp.setTipoCarteira("conservadora");
-                cp.setSegmento(seg);
-                cp.setPercentual(cons.getInt(seg));
-                carteiraPercentualRepository.save(cp);
-            });
-
-            // Persiste agressiva
-            JSONObject aggr = distrib.getJSONObject("agressiva");
-            aggr.keySet().forEach(seg -> {
-                CarteiraPercentual cp = carteiraPercentualRepository
-                        .findByUsuarioIdAndObjetivoIdAndTipoCarteiraAndSegmento(
-                                u.getId(), obj.getId(), "agressiva", seg)
-                        .orElse(new CarteiraPercentual());
-                cp.setUsuario(u);
-                cp.setObjetivo(obj);
-                cp.setTipoCarteira("agressiva");
-                cp.setSegmento(seg);
-                cp.setPercentual(aggr.getInt(seg));
-                carteiraPercentualRepository.save(cp);
-            });
-
-            log.info("Distribuições inseridas no BD para usuário={}", u.getId());
-            return ResponseEntity.ok(Map.of(
-                    "message", "Distribuições geradas com sucesso",
-                    "distribuicao", distrib.toMap()
-            ));
-
-        } catch (ResponseStatusException ex) {
-            log.warn("simular-percentual - {}", ex.getReason());
-            return ResponseEntity.status(ex.getStatusCode())
-                    .body(Map.of(
-                            "status", ex.getStatusCode().value(),
-                            "error",  ex.getStatusCode().toString(),
-                            "message", ex.getReason()
-                    ));
-        } catch (Exception ex) {
-            log.error("Erro interno em simular-percentual", ex);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of(
-                            "status", HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                            "error",  HttpStatus.INTERNAL_SERVER_ERROR.toString(),
-                            "message", "Erro ao gerar distribuições: " + ex.getMessage()
-                    ));
-        }
-    }
-
-    /**
-     * Confirma a carteira (0 = conservadora, 1 = agressiva), gera ativos via IA
-     * e salva a seleção no banco.
-     *
-     * @param userDetails detalhes do usuário (JWT)
-     * @param dto         tipo de carteira escolhida
-     * @return 200 + detalhes da carteira, ou 404/500 em erro
-     */
-    @PostMapping("/selecionar-carteira")
-    @Operation(
-            summary = "Confirmar escolha de carteira",
-            description = "Salva os ativos recomendados pela IA para a carteira selecionada.",
-            security = @SecurityRequirement(name = "bearerAuth")
-    )
-    @ApiResponses({
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Carteira confirmada com sucesso",
-                    content = @Content(
-                            mediaType = "application/json",
-                            examples = @ExampleObject(
-                                    value = "{\n" +
-                                            "  \"message\": \"Carteira confirmada com sucesso\",\n" +
-                                            "  \"carteiraEscolhida\": \"conservadora\",\n" +
-                                            "  \"carteira\": { \"fiis\": [\"HGLG11\"], \"acoes\": [\"ITUB4\"] }\n" +
-                                            "}"
-                            )
-                    )
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "Objetivo não encontrado",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorResponseDTO.class),
-                            examples = @ExampleObject(
-                                    value = "{ \"status\": \"404\", \"error\": \"404 NOT_FOUND\", \"message\": \"Objetivo não encontrado\" }"
-                            )
-                    )
-            ),
-            @ApiResponse(
-                    responseCode = "500",
-                    description = "Erro interno ao confirmar carteira",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorResponseDTO.class),
-                            examples = @ExampleObject(
-                                    value = "{ \"status\": \"500\", \"error\": \"500 INTERNAL_SERVER_ERROR\", \"message\": \"Erro ao confirmar carteira: ...\" }"
-                            )
-                    )
-            )
-    })
-    public ResponseEntity<?> confirmarEscolhaCarteira(
-            @AuthenticationPrincipal org.springframework.security.core.userdetails.User userDetails,
-            @RequestBody @Valid EscolhaCarteiraDTO dto) {
-
-        log.info("[POST] /api/carteiras/selecionar-carteira - usuario={} tipo={}",
-                userDetails.getUsername(), dto.getTipoCarteira());
-        try {
-            Usuario u = usuarioService.findByEmail(userDetails.getUsername());
-            ObjetivoUsuario obj = objetivoService
-                    .buscarUltimoPorUsuario(u)
-                    .orElseThrow(() -> new ResponseStatusException(
-                            HttpStatus.NOT_FOUND, "Objetivo não encontrado"));
-
-            String tipo = dto.getTipoCarteira() == 0 ? "conservadora" : "agressiva";
-            List<CarteiraPercentual> lista = carteiraPercentualRepository
-                    .findByUsuarioIdAndObjetivoId(u.getId(), obj.getId())
-                    .stream()
-                    .filter(p -> p.getTipoCarteira().equalsIgnoreCase(tipo))
-                    .collect(Collectors.toList());
-
-            JSONObject dist = new JSONObject();
-            lista.forEach(cp -> dist.put(cp.getSegmento(), cp.getPercentual()));
-
-            JSONObject respostaIA = iaService.chamarOpenAI(
-                    iaService.gerarPromptAtivos(obj, new JSONObject(Map.of(tipo, dist)), tipo)
-            );
-            JSONObject carteiraJson = respostaIA.getJSONObject("carteira");
-
-            carteiraAtivoService.salvarAtivos(tipo, carteiraJson, u, obj, new JSONObject(Map.of(tipo, dist)));
-
-            CarteiraUsuario cu = carteiraService.buscarPorObjetivo(obj).orElse(new CarteiraUsuario());
-            cu.setUsuario(u);
-            cu.setObjetivoUsuario(obj);
-            cu.setCarteiraSelecionada(tipo);
-            if (dto.getTipoCarteira() == 0) {
-                cu.setCarteiraConservadoraJson(carteiraJson.toString());
-            } else {
-                cu.setCarteiraAgressivaJson(carteiraJson.toString());
-            }
-            carteiraService.salvar(cu);
-
-            log.info("Carteira '{}' salva para usuario={}", tipo, u.getId());
-            return ResponseEntity.ok(Map.of(
-                    "message", "Carteira confirmada com sucesso",
-                    "carteiraEscolhida", tipo,
-                    "carteira", carteiraJson.toMap()
-            ));
-
-        } catch (ResponseStatusException ex) {
-            log.warn("selecionar-carteira - {}", ex.getReason());
-            return ResponseEntity.status(ex.getStatusCode()).body(Map.of(
-                    "status", ex.getStatusCode().value(),
-                    "error",  ex.getStatusCode().toString(),
-                    "message", ex.getReason()
-            ));
-        } catch (Exception ex) {
-            log.error("Erro interno em selecionar-carteira", ex);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
-                    "status", HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                    "error",  HttpStatus.INTERNAL_SERVER_ERROR.toString(),
-                    "message", "Erro ao confirmar carteira: " + ex.getMessage()
-            ));
-        }
-    }
-
-    /**
-     * Busca a carteira já confirmada pelo usuário (conservadora ou agressiva).
-     *
-     * @param userDetails detalhes do usuário (JWT)
-     * @return 200 + objeto \"carteira\", ou 404/500 em erro
-     */
-    @GetMapping("/selecionada")
-    @Operation(
-            summary = "Visualizar carteira confirmada",
-            description = "Retorna a carteira previamente confirmada pelo usuário.",
-            security = @SecurityRequirement(name = "bearerAuth")
-    )
-    @ApiResponses({
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Carteira retornada com sucesso",
-                    content = @Content(
-                            mediaType = "application/json",
-                            examples = @ExampleObject(
-                                    value = "{\n" +
-                                            "  \"carteira\": {\n" +
-                                            "    \"fiis\": [\"HGLG11\"],\n" +
-                                            "    \"cripto\": [],\n" +
-                                            "    \"rendaFixa\": [\"LCA 2028\"],\n" +
-                                            "    \"acoes\": [\"ITUB4\"]\n" +
-                                            "  }\n" +
-                                            "}"
-                            )
-                    )
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "Nenhuma carteira confirmada encontrada",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorResponseDTO.class),
-                            examples = @ExampleObject(
-                                    value = "{ \"status\": \"404\", \"error\": \"404 NOT_FOUND\", \"message\": \"Nenhuma carteira confirmada para este objetivo\" }"
-                            )
-                    )
-            ),
-            @ApiResponse(
-                    responseCode = "500",
-                    description = "Erro interno ao recuperar carteira",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorResponseDTO.class),
-                            examples = @ExampleObject(
-                                    value = "{ \"status\": \"500\", \"error\": \"500 INTERNAL_SERVER_ERROR\", \"message\": \"...\" }"
-                            )
-                    )
-            )
-    })
-    public ResponseEntity<?> visualizarCarteiraSelecionada(
-            @AuthenticationPrincipal org.springframework.security.core.userdetails.User userDetails) {
-
-        log.info("[GET] /api/carteiras/selecionada - usuário={}", userDetails.getUsername());
-        try {
-            Usuario u = usuarioService.findByEmail(userDetails.getUsername());
-            ObjetivoUsuario obj = objetivoService.buscarUltimoPorUsuario(u)
-                    .orElseThrow(() -> new ResponseStatusException(
-                            HttpStatus.NOT_FOUND, "Nenhum objetivo encontrado para o usuário"));
-
-            CarteiraUsuario cu = carteiraService.buscarPorObjetivo(obj)
-                    .orElseThrow(() -> new ResponseStatusException(
-                            HttpStatus.NOT_FOUND, "Nenhuma carteira confirmada para este objetivo"));
-
-            String tipo = cu.getCarteiraSelecionada();
-            String raw = "conservadora".equalsIgnoreCase(tipo)
-                    ? cu.getCarteiraConservadoraJson()
-                    : cu.getCarteiraAgressivaJson();
-            JSONObject json = new JSONObject(raw);
-
-            log.info("Carteira '{}' retornada para usuario={}", tipo, u.getId());
-            return ResponseEntity.ok(Map.of("carteira", json.toMap()));
-
-        } catch (ResponseStatusException ex) {
-            log.warn("visualizar-carteira - {}", ex.getReason());
-            return ResponseEntity.status(ex.getStatusCode()).body(Map.of(
-                    "status", ex.getStatusCode().value(),
-                    "error",  ex.getStatusCode().toString(),
-                    "message", ex.getReason()
-            ));
-        } catch (Exception ex) {
-            log.error("Erro interno em visualizar-carteira", ex);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
-                    "status", HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                    "error",  HttpStatus.INTERNAL_SERVER_ERROR.toString(),
-                    "message", "Erro ao recuperar carteira: " + ex.getMessage()
-            ));
-        }
-    }
-
-    @GetMapping("/percentual")
-    @Operation(summary="Buscar percentuais atuais", security=@SecurityRequirement(name="bearerAuth"))
-    public ResponseEntity<?> buscarDistribuicaoAtual(
-            @AuthenticationPrincipal org.springframework.security.core.userdetails.User userDetails) {
+    @PostMapping("/percentuais/gerar")
+    public ResponseEntity<?> gerarPercentuais(
+            @AuthenticationPrincipal User userDetails
+    ) throws Exception {
         Usuario u = usuarioService.findByEmail(userDetails.getUsername());
         ObjetivoUsuario obj = objetivoService
                 .buscarUltimoPorUsuario(u)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "Objetivo não encontrado"));
+                .orElseThrow(() -> new RuntimeException("Objetivo não encontrado"));
 
-        // busca tudo e agrupa por tipoCarteira
-        List<CarteiraPercentual> lista = carteiraPercentualRepository
-                .findByUsuarioIdAndObjetivoId(u.getId(), obj.getId());
+        // chama IA
+        String promptPct = iaService.gerarPromptDistribuicao(obj);
+        JSONObject respPct = iaService.chamarOpenAI(promptPct);
 
-        Map<String, Map<String,Integer>> distribPorTipo = new HashMap<>();
-        for (CarteiraPercentual cp : lista) {
-            distribPorTipo
-                    .computeIfAbsent(cp.getTipoCarteira(), t -> new HashMap<>())
-                    .put(cp.getSegmento(), cp.getPercentual());
+        // converte JSONObject → Map<String,Map<String,Integer>>
+        Map<String, Map<String,Integer>> pctMap = new LinkedHashMap<>();
+        for (String tipo : List.of("conservadora", "agressiva")) {
+            JSONObject j = respPct.getJSONObject(tipo);
+            Map<String,Integer> segMap = new LinkedHashMap<>();
+            for (String segmento : j.keySet()) {
+                segMap.put(segmento, j.getInt(segmento));
+            }
+            pctMap.put(tipo, segMap);
         }
 
-        return ResponseEntity.ok(Map.of("distribuicao", distribPorTipo));
+        return ResponseEntity.ok(pctMap);
     }
 
-    @PutMapping("/percentual")
-    @Operation(summary="Ajustar percentuais manualmente", security=@SecurityRequirement(name="bearerAuth"))
-    public ResponseEntity<?> atualizarDistribuicao(
-            @AuthenticationPrincipal org.springframework.security.core.userdetails.User userDetails,
-            @Valid @RequestBody AtualizaDistribuicaoDTO dto) {
+    /**
+     * 2) Gera carteiras de ativos (listas de códigos) a partir de percentuais,
+     *    sem persistir
+     */
+    @PostMapping("/ativos/gerar")
+    public ResponseEntity<?> gerarAtivos(
+            @AuthenticationPrincipal User userDetails,
+            @RequestBody Map<String, Map<String,Integer>> distribuicao
+    ) throws Exception {
+        Usuario u = usuarioService.findByEmail(userDetails.getUsername());
+        ObjetivoUsuario obj = objetivoService
+                .buscarUltimoPorUsuario(u)
+                .orElseThrow(() -> new RuntimeException("Objetivo não encontrado"));
 
+        // chama IA para obter JSON com "carteira":{...}
+        JSONObject allCarteiras = iaService
+                .chamarOpenAI(
+                        iaService.gerarPromptAtivos(
+                                obj,
+                                new JSONObject(distribuicao),
+                                "ambas"  // pode ser "conservadora", "agressiva" ou "ambas"
+                        )
+                )
+                .getJSONObject("carteira");
+
+        // converte JSONObject → Map<String,Map<String,List<String>>>
+        Map<String, Map<String,List<String>>> result = new LinkedHashMap<>();
+        for (String tipo : List.of("conservadora", "agressiva")) {
+            JSONObject cj = allCarteiras.getJSONObject(tipo);
+            Map<String,List<String>> ativosPorSegmento = new LinkedHashMap<>();
+            for (String segmento : cj.keySet()) {
+                JSONArray arr = cj.getJSONArray(segmento);
+                List<String> lista = new ArrayList<>();
+                for (int i = 0; i < arr.length(); i++) {
+                    lista.add(arr.getString(i));
+                }
+                ativosPorSegmento.put(segmento, lista);
+            }
+            result.put(tipo, ativosPorSegmento);
+        }
+
+        return ResponseEntity.ok(result);
+    }
+    @GetMapping("/selecionada")
+    public ResponseEntity<?> getCarteiraSelecionada(
+            @AuthenticationPrincipal User userDetails,
+            @RequestParam String tipo   // "conservadora" ou "agressiva"
+    ) {
         // 1) busca usuário e objetivo
         Usuario u = usuarioService.findByEmail(userDetails.getUsername());
         ObjetivoUsuario obj = objetivoService
                 .buscarUltimoPorUsuario(u)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "Objetivo não encontrado"));
+                .orElseThrow(() -> new RuntimeException("Objetivo não encontrado"));
 
-        // 2) valida soma == 100
-        Map<String,Integer> mapa = dto.getDistribuicao();
-        int soma = mapa.values().stream().mapToInt(i->i).sum();
-        if (soma != 100) {
-            return ResponseEntity
-                    .badRequest()
-                    .body(Map.of("message", "A soma dos percentuais deve ser 100%"));
-        }
+        Long userId = u.getId(), objId = obj.getId();
 
-        // 3) persiste apenas os segmentos que vieram
-        mapa.forEach((segmento, pct) -> {
-            CarteiraPercentual cp = carteiraPercentualRepository
-                    .findByUsuarioIdAndObjetivoIdAndTipoCarteiraAndSegmento(
-                            u.getId(), obj.getId(), dto.getTipoCarteira(), segmento)
-                    .orElse(new CarteiraPercentual());
+        // 2) busca percentuais
+        List<CarteiraPercentual> pctList = percentualRepo
+                .findByUsuarioIdAndObjetivoIdAndTipoCarteira(userId, objId, tipo);
+
+        Map<String,Integer> percentuais = pctList.stream()
+                .collect(Collectors.toMap(
+                        CarteiraPercentual::getSegmento,
+                        CarteiraPercentual::getPercentual
+                ));
+
+        // 3) busca ativos
+        List<CarteiraAtivo> ativosList = carteiraAtivoService
+                .buscarPorObjetivoETipo(obj, tipo);
+
+        Map<String,List<CarteiraResponseDTO.AtivoDTO>> ativos = ativosList.stream()
+                .collect(Collectors.groupingBy(
+                        CarteiraAtivo::getSegmento,
+                        Collectors.mapping(a ->
+                                        new CarteiraResponseDTO.AtivoDTO(
+                                                a.getNomeAtivo(),
+                                                a.getPrecoUnitario(),
+                                                a.getQuantidadeCotas()
+                                        ),
+                                Collectors.toList()
+                        )
+                ));
+
+        // 4) monta e retorna
+        CarteiraResponseDTO response = new CarteiraResponseDTO(percentuais, ativos);
+        return ResponseEntity.ok(response);
+    }
+
+    // Métodos auxiliares dentro do controller (pode mover para um service):
+    private void salvarPercentuais(Usuario u, ObjetivoUsuario obj, String tipo,
+                                   Map<String,Integer> mapaPct) {
+        mapaPct.forEach((segmento, pct) -> {
+            CarteiraPercentual cp = new CarteiraPercentual();
             cp.setUsuario(u);
             cp.setObjetivo(obj);
-            cp.setTipoCarteira(dto.getTipoCarteira());
+            cp.setTipoCarteira(tipo);
             cp.setSegmento(segmento);
             cp.setPercentual(pct);
-            carteiraPercentualRepository.save(cp);
+            percentualRepo.save(cp);
         });
-
-        return ResponseEntity.ok(Map.of(
-                "message", "Distribuição atualizada com sucesso",
-                "distribuicao", mapa
-        ));
     }
 
-    /**
-     * DTO para receber a escolha de tipo de carteira pelo usuário.
-     * <p>0 = conservadora, 1 = agressiva</p>
-     */
-    @Data
-    public static class EscolhaCarteiraDTO {
-        private int tipoCarteira;
+    private void salvarAtivosManuais(Usuario u, ObjetivoUsuario obj, String tipo,
+                                     Map<String,List<String>> ativosPorSegmento,
+                                     Map<String,Integer> distribuicaoPct) {
+        double valorTotal = obj.getValorInicial();
+        ativosPorSegmento.forEach((segmento, lista) -> {
+            int pctSegmento = distribuicaoPct.getOrDefault(segmento, 0);
+            double valorSegmento = valorTotal * pctSegmento / 100.0;
+            int qtdAtivos = lista.size();
+            double valorPorAtivo = qtdAtivos>0 ? valorSegmento/qtdAtivos : 0;
+
+            for (String ticker : lista) {
+                double preco = precoAtivoService.buscarPreco(ticker);
+                int quantidade = preco>0 ? (int)Math.floor(valorPorAtivo/preco) : 0;
+                if (quantidade<=0) continue;
+
+                CarteiraAtivo ca = new CarteiraAtivo();
+                ca.setUsuario(u);
+                ca.setObjetivo(obj);
+                ca.setTipoCarteira(tipo);
+                ca.setSegmento(segmento);
+                ca.setNomeAtivo(ticker);
+                ca.setPrecoUnitario(preco);
+                ca.setQuantidadeCotas(quantidade);
+                carteiraAtivoService.salvar(ca);
+            }
+        });
     }
+
+    @PostMapping("/selecionar")
+    @Transactional  // garante transação ativa para deleteAll + saves
+    public ResponseEntity<?> selecionarCarteira(
+            @AuthenticationPrincipal User userDetails,
+            @RequestParam("tipo") String tipo,
+            @RequestBody CarteiraPersistRequest request
+    ) {
+        // 0) checagem de body
+        if (request.getPercentuais() == null || request.getPercentuais().isEmpty()) {
+            return ResponseEntity
+                    .badRequest()
+                    .body("Campo 'percentuais' é obrigatório e não pode ser vazio.");
+        }
+        if (request.getAtivos() == null || request.getAtivos().isEmpty()) {
+            return ResponseEntity
+                    .badRequest()
+                    .body("Campo 'ativos' é obrigatório e não pode ser vazio.");
+        }
+
+        // 1) busca usuário e objetivo…
+        Usuario u = usuarioService.findByEmail(userDetails.getUsername());
+        ObjetivoUsuario obj = objetivoService
+                .buscarUltimoPorUsuario(u)
+                .orElseThrow(() -> new RuntimeException("Objetivo não encontrado"));
+
+        // 2) limpa registros antigos
+        percentualRepo.deleteAllByUsuarioIdAndObjetivoId(u.getId(), obj.getId());
+        carteiraAtivoService.deleteAllByUsuarioIdAndObjetivoId(u.getId(), obj.getId());
+
+        // 3) persiste percentuais e ativos — agora garantido não ser nulo
+        salvarPercentuais(u, obj, tipo, request.getPercentuais());
+        salvarAtivosManuais(u, obj, tipo, request.getAtivos(), request.getPercentuais());
+
+        return ResponseEntity.ok("Carteira '" + tipo + "' salva com sucesso.");
+    }
+
 }
