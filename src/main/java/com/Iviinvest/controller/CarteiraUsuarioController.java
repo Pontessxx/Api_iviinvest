@@ -1,7 +1,6 @@
 package com.Iviinvest.controller;
 
-import com.Iviinvest.dto.CarteiraPersistRequest;
-import com.Iviinvest.dto.CarteiraSelecionadaRequest;
+import com.Iviinvest.dto.*;
 import org.springframework.transaction.annotation.Transactional;
 import com.Iviinvest.model.*;
 import com.Iviinvest.repository.CarteiraPercentualRepository;
@@ -20,8 +19,8 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.web.bind.annotation.*;
 import com.Iviinvest.service.CarteiraAtivoService;
 import com.Iviinvest.service.PrecoAtivoService;
+import org.springframework.beans.BeanUtils;
 
-import com.Iviinvest.dto.CarteiraResponseDTO;
 import com.Iviinvest.service.CarteiraAtivoService;
 import com.Iviinvest.service.PrecoAtivoService;
 import java.util.stream.Collectors;
@@ -260,5 +259,65 @@ public class CarteiraUsuarioController {
 
         return ResponseEntity.ok("Carteira '" + tipo + "' salva com sucesso.");
     }
+
+    @GetMapping("/simulacao")
+    public ResponseEntity<SimulacaoDTO> simularRentabilidade(
+            @AuthenticationPrincipal User userDetails,
+            @RequestParam String tipoCarteira  // ex: "conservadora"
+    ) {
+        // 1) busca usuário e objetivo
+        Usuario u = usuarioService.findByEmail(userDetails.getUsername());
+        ObjetivoUsuario objEntity = objetivoService
+                .buscarUltimoPorUsuario(u)
+                .orElseThrow(() -> new RuntimeException("Objetivo não encontrado"));
+
+        // 2) converte entidade → DTO de objetivo
+        ObjetivoUsuarioDTO objetivoDto = new ObjetivoUsuarioDTO();
+        BeanUtils.copyProperties(objEntity, objetivoDto);
+
+        // 3) monta mapa de percentuais
+        List<CarteiraPercentual> pctList = percentualRepo
+                .findByUsuarioIdAndObjetivoIdAndTipoCarteira(u.getId(), objEntity.getId(), tipoCarteira);
+        Map<String,Integer> percentuais = pctList.stream()
+                .collect(Collectors.toMap(
+                        CarteiraPercentual::getSegmento,
+                        CarteiraPercentual::getPercentual
+                ));
+
+        // 4) monta mapa de ativos
+        List<CarteiraAtivo> ativosList = carteiraAtivoService
+                .buscarPorObjetivoETipo(objEntity, tipoCarteira);
+        Map<String, List<CarteiraResponseDTO.AtivoDTO>> ativos = ativosList.stream()
+                .collect(Collectors.groupingBy(
+                        CarteiraAtivo::getSegmento,
+                        Collectors.mapping(a ->
+                                        new CarteiraResponseDTO.AtivoDTO(
+                                                a.getNomeAtivo(),
+                                                a.getPrecoUnitario(),
+                                                a.getQuantidadeCotas()
+                                        ),
+                                Collectors.toList()
+                        )
+                ));
+
+        // 5) gera gráfico de exemplo (pode colocar sua lógica real aqui)
+        List<PontoDTO> grafico = new ArrayList<>();
+        double base = objetivoDto.getValorInicial();
+        for (int i = 1; i <= objetivoDto.getPrazo(); i++) {
+            // Exemplo simplificado: patr. = base + aporteMensal * i
+            double patr = base + objetivoDto.getAporteMensal() * i;
+            grafico.add(new PontoDTO(i, patr));
+        }
+
+        // 6) retorna o DTO de simulação
+        SimulacaoDTO resposta = new SimulacaoDTO(
+                objetivoDto,
+                percentuais,
+                ativos,
+                grafico
+        );
+        return ResponseEntity.ok(resposta);
+    }
+
 
 }
