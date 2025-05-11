@@ -23,6 +23,8 @@ import org.springframework.beans.BeanUtils;
 
 import com.Iviinvest.service.CarteiraAtivoService;
 import com.Iviinvest.service.PrecoAtivoService;
+import org.springframework.web.server.ResponseStatusException;
+
 import java.util.stream.Collectors;
 
 
@@ -263,19 +265,31 @@ public class CarteiraUsuarioController {
     @GetMapping("/simulacao")
     public ResponseEntity<SimulacaoDTO> simularRentabilidade(
             @AuthenticationPrincipal User userDetails,
-            @RequestParam String tipoCarteira  // ex: "conservadora"
+            @RequestParam String tipoCarteira,
+            @RequestParam(required = false) Long objetivoId   // ← novo parâmetro
     ) {
-        // 1) busca usuário e objetivo
+        // 1) busca o usuário pelo e-mail do token
         Usuario u = usuarioService.findByEmail(userDetails.getUsername());
-        ObjetivoUsuario objEntity = objetivoService
-                .buscarUltimoPorUsuario(u)
-                .orElseThrow(() -> new RuntimeException("Objetivo não encontrado"));
 
-        // 2) converte entidade → DTO de objetivo
+        // 2) decide qual ObjetivoUsuario usar: passado ou último
+        ObjetivoUsuario objEntity;
+        if (objetivoId != null) {
+            objEntity = objetivoService
+                    .buscarPorIdEUsuario(objetivoId, u)
+                    .orElseThrow(() ->
+                            new ResponseStatusException(HttpStatus.NOT_FOUND, "Objetivo não encontrado"));
+        } else {
+            objEntity = objetivoService
+                    .buscarUltimoPorUsuario(u)
+                    .orElseThrow(() ->
+                            new ResponseStatusException(HttpStatus.NOT_FOUND, "Nenhum objetivo encontrado"));
+        }
+
+        // 3) converte entidade → DTO
         ObjetivoUsuarioDTO objetivoDto = new ObjetivoUsuarioDTO();
         BeanUtils.copyProperties(objEntity, objetivoDto);
 
-        // 3) monta mapa de percentuais
+        // 4) monta mapa de percentuais
         List<CarteiraPercentual> pctList = percentualRepo
                 .findByUsuarioIdAndObjetivoIdAndTipoCarteira(u.getId(), objEntity.getId(), tipoCarteira);
         Map<String,Integer> percentuais = pctList.stream()
@@ -284,10 +298,10 @@ public class CarteiraUsuarioController {
                         CarteiraPercentual::getPercentual
                 ));
 
-        // 4) monta mapa de ativos
+        // 5) monta mapa de ativos
         List<CarteiraAtivo> ativosList = carteiraAtivoService
                 .buscarPorObjetivoETipo(objEntity, tipoCarteira);
-        Map<String, List<CarteiraResponseDTO.AtivoDTO>> ativos = ativosList.stream()
+        Map<String,List<CarteiraResponseDTO.AtivoDTO>> ativos = ativosList.stream()
                 .collect(Collectors.groupingBy(
                         CarteiraAtivo::getSegmento,
                         Collectors.mapping(a ->
@@ -300,16 +314,15 @@ public class CarteiraUsuarioController {
                         )
                 ));
 
-        // 5) gera gráfico de exemplo (pode colocar sua lógica real aqui)
+        // 6) geração de exemplo para o gráfico (substitua pela sua lógica real)
         List<PontoDTO> grafico = new ArrayList<>();
         double base = objetivoDto.getValorInicial();
         for (int i = 1; i <= objetivoDto.getPrazo(); i++) {
-            // Exemplo simplificado: patr. = base + aporteMensal * i
             double patr = base + objetivoDto.getAporteMensal() * i;
             grafico.add(new PontoDTO(i, patr));
         }
 
-        // 6) retorna o DTO de simulação
+        // 7) monta e retorna o DTO de simulação
         SimulacaoDTO resposta = new SimulacaoDTO(
                 objetivoDto,
                 percentuais,

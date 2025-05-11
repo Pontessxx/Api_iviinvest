@@ -76,4 +76,7 @@ public class ObjetivoUsuarioService {
         return repository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(org.springframework.http.HttpStatus.NOT_FOUND, "Objetivo não encontrado"));
     }
+    public Optional<ObjetivoUsuario> buscarPorIdEUsuario(Long id, Usuario usuario) {
+        return repository.findByIdAndUsuario(id, usuario);
+    }
 }

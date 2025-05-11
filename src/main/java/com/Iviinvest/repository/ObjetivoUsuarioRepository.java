@@ -10,4 +10,5 @@ import java.util.Optional;
 public interface ObjetivoUsuarioRepository extends JpaRepository<ObjetivoUsuario, Long> {
     Optional<ObjetivoUsuario> findFirstByUsuarioOrderByIdDesc(Usuario usuario);
     List<ObjetivoUsuario> findAllByUsuarioOrderByIdDesc(Usuario usuario);
+    Optional<ObjetivoUsuario> findByIdAndUsuario(Long id, Usuario usuario);
 }
