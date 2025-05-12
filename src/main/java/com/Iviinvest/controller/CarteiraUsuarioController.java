@@ -1,6 +1,7 @@
 package com.Iviinvest.controller;
 
 import com.Iviinvest.dto.*;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.transaction.annotation.Transactional;
 import com.Iviinvest.model.*;
 import com.Iviinvest.repository.CarteiraPercentualRepository;
@@ -15,6 +16,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.web.bind.annotation.*;
 import com.Iviinvest.service.CarteiraAtivoService;
@@ -31,6 +37,10 @@ import java.util.stream.Collectors;
 
 import java.util.*;
 
+/**
+ * Controller responsável pela geração, seleção e simulação de carteiras de investimento
+ * com base nos objetivos definidos pelo usuário.
+ */
 @RestController
 @RequestMapping("/api/carteiras")
 public class CarteiraUsuarioController {
@@ -67,8 +77,38 @@ public class CarteiraUsuarioController {
 
 
     /**
-     * 1) Gera percentuais ideais (conservadora + agressiva) via IA
+     * Gera distribuições percentuais (conservadora e agressiva) recomendadas por IA
+     *
+     * @param userDetails Dados do usuário autenticado
+     * @return Mapa com os percentuais por segmento para cada tipo de carteira
      */
+    /**
+     * Gera percentuais ideais (conservadora e agressiva) com base no último objetivo do usuário.
+     */
+    @Operation(summary = "Gerar percentuais de carteira por IA",
+            security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Percentuais gerados com sucesso",
+                    content = @Content(mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    value = "{\n" +
+                                            "  \"conservadora\": {\n" +
+                                            "    \"rendaFixa\": 50,\n" +
+                                            "    \"acoes\": 20,\n" +
+                                            "    \"fiis\": 20,\n" +
+                                            "    \"cripto\": 10\n" +
+                                            "  },\n" +
+                                            "  \"agressiva\": {\n" +
+                                            "    \"rendaFixa\": 20,\n" +
+                                            "    \"acoes\": 40,\n" +
+                                            "    \"fiis\": 20,\n" +
+                                            "    \"cripto\": 20\n" +
+                                            "  }\n" +
+                                            "}"
+                            )
+                    )
+            )
+    })
     @PostMapping("/percentuais/gerar")
     public ResponseEntity<?> gerarPercentuais(
             @AuthenticationPrincipal User userDetails
@@ -100,6 +140,30 @@ public class CarteiraUsuarioController {
      * 2) Gera carteiras de ativos (listas de códigos) a partir de percentuais,
      *    sem persistir
      */
+    @Operation(summary = "Gerar lista de ativos com base nos percentuais",
+            security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Carteiras geradas com sucesso",
+                    content = @Content(mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    value = "{\n" +
+                                            "  \"conservadora\": {\n" +
+                                            "    \"rendaFixa\": [\"LCA-BRADESCO\", \"CDB-ITAU\"],\n" +
+                                            "    \"acoes\": [\"WEGE3\"],\n" +
+                                            "    \"fiis\": [\"HGLG11\"],\n" +
+                                            "    \"cripto\": [\"HASH11\"]\n" +
+                                            "  },\n" +
+                                            "  \"agressiva\": {\n" +
+                                            "    \"rendaFixa\": [\"TESOURO-IPCA\"],\n" +
+                                            "    \"acoes\": [\"PETR4\", \"VALE3\"],\n" +
+                                            "    \"fiis\": [\"KNRI11\"],\n" +
+                                            "    \"cripto\": [\"BTC\", \"ETH\"]\n" +
+                                            "  }\n" +
+                                            "}"
+                            )
+                    )
+            )
+    })
     @PostMapping("/ativos/gerar")
     public ResponseEntity<?> gerarAtivos(
             @AuthenticationPrincipal User userDetails,
@@ -139,6 +203,36 @@ public class CarteiraUsuarioController {
 
         return ResponseEntity.ok(result);
     }
+
+    @Operation(summary = "Buscar carteira selecionada do usuário",
+            description = "Retorna os percentuais e ativos da carteira selecionada (conservadora ou agressiva).",
+            security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Carteira retornada com sucesso",
+                    content = @Content(mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    value = "{\n" +
+                                            "  \"percentuais\": {\n" +
+                                            "    \"rendaFixa\": 40,\n" +
+                                            "    \"acoes\": 30,\n" +
+                                            "    \"fiis\": 20,\n" +
+                                            "    \"cripto\": 10\n" +
+                                            "  },\n" +
+                                            "  \"ativos\": {\n" +
+                                            "    \"rendaFixa\": [\n" +
+                                            "      {\"nomeAtivo\": \"CDB-ITAU\", \"precoUnitario\": 100.0, \"quantidadeCotas\": 2}\n" +
+                                            "    ],\n" +
+                                            "    \"acoes\": [\n" +
+                                            "      {\"nomeAtivo\": \"VALE3\", \"precoUnitario\": 80.0, \"quantidadeCotas\": 3}\n" +
+                                            "    ]\n" +
+                                            "  }\n" +
+                                            "}"
+                            )
+                    )
+            )
+    })
     @GetMapping("/selecionada")
     public ResponseEntity<?> getCarteiraSelecionada(
             @AuthenticationPrincipal User userDetails,
@@ -226,6 +320,29 @@ public class CarteiraUsuarioController {
         });
     }
 
+    @Operation(summary = "Selecionar e salvar carteira do usuário",
+            description = "Persiste os dados da carteira escolhida pelo usuário, removendo qualquer versão anterior.",
+            security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Carteira salva com sucesso",
+                    content = @Content(mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    value = "{\"message\": \"Carteira 'conservadora' salva com sucesso.\"}"
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Erro de validação",
+                    content = @Content(mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    value = "{\"status\": \"400\", \"error\": \"BAD_REQUEST\", \"message\": \"Campo 'ativos' é obrigatório e não pode ser vazio.\"}"
+                            )
+                    )
+            )
+    })
     @PostMapping("/selecionar")
     @Transactional  // garante transação ativa para deleteAll + saves
     public ResponseEntity<?> selecionarCarteira(
@@ -262,6 +379,49 @@ public class CarteiraUsuarioController {
         return ResponseEntity.ok("Carteira '" + tipo + "' salva com sucesso.");
     }
 
+    @Operation(summary = "Simular rentabilidade da carteira ao longo do tempo",
+            description = "Gera pontos para gráfico de crescimento patrimonial com base na carteira escolhida.",
+            security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Simulação gerada com sucesso",
+                    content = @Content(mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    value = "{\n" +
+                                            "  \"objetivo\": {\n" +
+                                            "    \"objetivo\": \"Aposentadoria\",\n" +
+                                            "    \"prazo\": 15,\n" +
+                                            "    \"valorInicial\": 10000.0,\n" +
+                                            "    \"aporteMensal\": 500.0,\n" +
+                                            "    \"patrimonioAtual\": 20000.0,\n" +
+                                            "    \"liquidez\": \"Baixa\",\n" +
+                                            "    \"setoresEvitar\": [\"Criptomoedas\"],\n" +
+                                            "    \"dataCriacao\": \"2025-05-10\"\n" +
+                                            "  },\n" +
+                                            "  \"percentuais\": {\n" +
+                                            "    \"acoes\": 30,\n" +
+                                            "    \"rendaFixa\": 40,\n" +
+                                            "    \"fiis\": 20,\n" +
+                                            "    \"cripto\": 10\n" +
+                                            "  },\n" +
+                                            "  \"ativos\": {\n" +
+                                            "    \"acoes\": [\n" +
+                                            "      {\"nomeAtivo\": \"PETR4\", \"precoUnitario\": 30.5, \"quantidadeCotas\": 4}\n" +
+                                            "    ],\n" +
+                                            "    \"rendaFixa\": [\n" +
+                                            "      {\"nomeAtivo\": \"CDB-BTG\", \"precoUnitario\": 100.0, \"quantidadeCotas\": 2}\n" +
+                                            "    ]\n" +
+                                            "  },\n" +
+                                            "  \"grafico\": [\n" +
+                                            "    {\"mes\": 1, \"valor\": 10500.0},\n" +
+                                            "    {\"mes\": 2, \"valor\": 11000.0}\n" +
+                                            "  ]\n" +
+                                            "}"
+                            )
+                    )
+            )
+    })
     @GetMapping("/simulacao")
     public ResponseEntity<SimulacaoDTO> simularRentabilidade(
             @AuthenticationPrincipal User userDetails,
