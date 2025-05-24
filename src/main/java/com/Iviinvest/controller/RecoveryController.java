@@ -23,7 +23,7 @@ import java.util.Map;
  * Controller responsável pelo gerenciamento de recuperação de senha.
  */
 @RestController
-@RequestMapping("/api/recover")
+@RequestMapping("/api/v1/recover")
 public class RecoveryController {
 
     private static final Logger log = LoggerFactory.getLogger(RecoveryController.class);

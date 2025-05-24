@@ -27,7 +27,7 @@ import java.util.Map;
  * Handles two-factor authentication (2FA) token generation and verification.
  */
 @RestController
-@RequestMapping("/api/auth/2fa")
+@RequestMapping("/api/v1/auth/2fa")
 public class TwoFactorAuthController {
 
     private static final Logger log = LoggerFactory.getLogger(TwoFactorAuthController.class);

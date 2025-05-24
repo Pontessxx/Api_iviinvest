@@ -74,19 +74,19 @@ public class SecurityConfig {
 
                         // Permite acesso público aos endpoints de autenticação
                         // Allows public access to authentication endpoints
-                        .requestMatchers("/api/auth/login", "/api/auth/register").permitAll()
+                        .requestMatchers("/api/v1/auth/login", "/api/auth/register").permitAll()
 
                         // Permite acesso público aos endpoints de recuperação de senha
                         // Allows public access to password recovery endpoints
-                        .requestMatchers("/api/recover/**").permitAll()
+                        .requestMatchers("/api/v1/recover/**").permitAll()
 
                         // Permite acesso publico aos endpoints de status da api
-                        .requestMatchers("/api/health").permitAll()
+                        .requestMatchers("/api/v1/health").permitAll()
 
                         // Permite acesso publico aos endpoints de 2FA da api
                         // Allows public access to 2FA endpoints
-                        .requestMatchers("/api/auth/2fa/send").permitAll()
-                        .requestMatchers("/api/auth/2fa/verify").permitAll()
+                        .requestMatchers("/api/v1/auth/2fa/send").permitAll()
+                        .requestMatchers("/api/v1/auth/2fa/verify").permitAll()
 
 
                         // Todas as demais requisições requerem autenticação

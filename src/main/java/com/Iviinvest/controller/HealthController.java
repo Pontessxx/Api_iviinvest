@@ -20,7 +20,7 @@ import java.util.Map;
  * Useful for automated monitoring and deployment tools.
  */
 @RestController
-@RequestMapping("/api/health")
+@RequestMapping("/api/v1/health")
 public class HealthController {
 
     /**

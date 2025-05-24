@@ -28,7 +28,7 @@ import java.util.Map;
  * Controller responsável pelo gerenciamento de objetivos de investimento do usuário.
  */
 @RestController
-@RequestMapping("/api/objetivos")
+@RequestMapping("/api/v1/objetivos")
 public class ObjetivoUsuarioController {
 
     private static final Logger log = LoggerFactory.getLogger(ObjetivoUsuarioController.class);
@@ -147,7 +147,9 @@ public class ObjetivoUsuarioController {
     public ResponseEntity<?> buscarUltimoObjetivo(
             @AuthenticationPrincipal org.springframework.security.core.userdetails.User userDetails) {
         String email = userDetails.getUsername();
-        log.info("[GET] - Solicitada busca do último objetivo para usuário: {}", email);
+        String maskedEmail = EmailUtils.mask(email);
+        log.info("[GET] - Solicitada busca do último objetivo para usuário: {}", maskedEmail);
+
 
         try {
             Usuario usuario = usuarioService.findByEmail(email);
@@ -166,11 +168,11 @@ public class ObjetivoUsuarioController {
                             dto.setSetoresEvitar(setoresEvitar);
                             dto.setDataCriacao(objetivo.getDataCriacao());
 
-                            log.info("[GET] - Último objetivo encontrado e retornado para usuário: {}", email);
+                            log.info("[GET] - Último objetivo encontrado e retornado para usuário: {}", maskedEmail);
                             return ResponseEntity.ok(dto);
 
                         } catch (Exception ex) {
-                            log.error("[GET] - Erro ao ler setores evitados para usuário {}: {}", email, ex.getMessage(), ex);
+                            log.error("[GET] - Erro ao ler setores evitados para usuário {}: {}", maskedEmail, ex.getMessage(), ex);
                             return ResponseEntity.internalServerError().body(Map.of(
                                     "status", "500",
                                     "error", "INTERNAL_SERVER_ERROR",
@@ -179,7 +181,7 @@ public class ObjetivoUsuarioController {
                         }
                     })
                     .orElseGet(() -> {
-                        log.warn("[GET] - Nenhum objetivo encontrado para usuário: {}", email);
+                        log.warn("[GET] - Nenhum objetivo encontrado para usuário: {}", maskedEmail);
                         return ResponseEntity.status(404).body(Map.of(
                                 "status", "404",
                                 "error", "NOT_FOUND",
@@ -188,14 +190,14 @@ public class ObjetivoUsuarioController {
                     });
 
         } catch (ResponseStatusException ex) {
-            log.error("[GET] - Falha ao buscar último objetivo para usuário {}: {}", email, ex.getReason());
+            log.error("[GET] - Falha ao buscar último objetivo para usuário {}: {}", maskedEmail, ex.getReason());
             return ResponseEntity.status(ex.getStatusCode()).body(Map.of(
                     "status", String.valueOf(ex.getStatusCode().value()),
                     "error", ex.getStatusCode().toString(),
                     "message", ex.getReason() != null ? ex.getReason() : "Erro inesperado"
             ));
         } catch (Exception ex) {
-            log.error("[GET] - Erro interno ao buscar último objetivo para usuário {}: {}", email, ex.getMessage(), ex);
+            log.error("[GET] - Erro interno ao buscar último objetivo para usuário {}: {}", maskedEmail, ex.getMessage(), ex);
             return ResponseEntity.internalServerError().body(Map.of(
                     "status", "500",
                     "error", "INTERNAL_SERVER_ERROR",
@@ -238,14 +240,15 @@ public class ObjetivoUsuarioController {
     public ResponseEntity<?> listarHistoricoObjetivos(
             @AuthenticationPrincipal org.springframework.security.core.userdetails.User userDetails) {
         String email = userDetails.getUsername();
-        log.info("[GET] - Solicitada listagem do histórico de objetivos para usuário: {}", email);
+        String maskedEmail = EmailUtils.mask(email);
+        log.info("[GET] - Solicitada listagem do histórico de objetivos para usuário: {}", maskedEmail);
 
         try {
             Usuario usuario = usuarioService.findByEmail(email);
             List<ObjetivoUsuarioDTO> objetivos = objetivoService.buscarHistoricoPorUsuario(usuario);
 
             if (objetivos.isEmpty()) {
-                log.warn("[GET] - Nenhum objetivo encontrado para usuário: {}", email);
+                log.warn("[GET] - Nenhum objetivo encontrado para usuário: {}", maskedEmail);
                 return ResponseEntity.status(404).body(Map.of(
                         "status", "404",
                         "error", "NOT_FOUND",
@@ -253,18 +256,18 @@ public class ObjetivoUsuarioController {
                 ));
             }
 
-            log.info("[GET] - {} objetivos retornados para histórico do usuário: {}", objetivos.size(), email);
+            log.info("[GET] - {} objetivos retornados para histórico do usuário: {}", objetivos.size(), maskedEmail);
             return ResponseEntity.ok(objetivos);
 
         } catch (ResponseStatusException ex) {
-            log.error("[GET] - Falha ao buscar histórico para usuário {}: {}", email, ex.getReason());
+            log.error("[GET] - Falha ao buscar histórico para usuário {}: {}", maskedEmail, ex.getReason());
             return ResponseEntity.status(ex.getStatusCode()).body(Map.of(
                     "status", String.valueOf(ex.getStatusCode().value()),
                     "error", ex.getStatusCode().toString(),
                     "message", ex.getReason() != null ? ex.getReason() : "Erro inesperado"
             ));
         } catch (Exception ex) {
-            log.error("[GET] - Erro interno ao buscar histórico para usuário {}: {}", email, ex.getMessage(), ex);
+            log.error("[GET] - Erro interno ao buscar histórico para usuário {}: {}", maskedEmail, ex.getMessage(), ex);
             return ResponseEntity.internalServerError().body(Map.of(
                     "status", "500",
                     "error", "INTERNAL_SERVER_ERROR",

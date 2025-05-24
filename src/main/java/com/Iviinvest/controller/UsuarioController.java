@@ -33,7 +33,7 @@ import org.slf4j.LoggerFactory;
  * as well as investor profile management.
  */
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/api/v1/auth")
 public class UsuarioController {
 
     private static final Logger log = LoggerFactory.getLogger(UsuarioController.class);

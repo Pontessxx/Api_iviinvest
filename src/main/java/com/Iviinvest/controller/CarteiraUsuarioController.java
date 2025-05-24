@@ -1,6 +1,7 @@
 package com.Iviinvest.controller;
 
 import com.Iviinvest.dto.*;
+import com.Iviinvest.util.EmailUtils;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.transaction.annotation.Transactional;
 import com.Iviinvest.model.*;
@@ -42,7 +43,7 @@ import java.util.*;
  * com base nos objetivos definidos pelo usuário.
  */
 @RestController
-@RequestMapping("/api/carteiras")
+@RequestMapping("/api/v1/carteiras")
 public class CarteiraUsuarioController {
 
     private static final Logger log = LoggerFactory.getLogger(CarteiraUsuarioController.class);
@@ -363,7 +364,11 @@ public class CarteiraUsuarioController {
         }
 
         // 1) busca usuário e objetivo…
-        Usuario u = usuarioService.findByEmail(userDetails.getUsername());
+        String email = userDetails.getUsername();
+        String maskedEmail = EmailUtils.mask(email);
+        log.info("[XYZ] - Ação com email: {}", maskedEmail);
+        Usuario u = usuarioService.findByEmail(email);
+
         ObjetivoUsuario obj = objetivoService
                 .buscarUltimoPorUsuario(u)
                 .orElseThrow(() -> new RuntimeException("Objetivo não encontrado"));

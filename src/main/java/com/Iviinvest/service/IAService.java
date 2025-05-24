@@ -2,6 +2,7 @@ package com.Iviinvest.service;
 
 import com.Iviinvest.model.CarteiraUsuario;
 import com.Iviinvest.model.ObjetivoUsuario;
+import com.Iviinvest.model.Usuario;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
@@ -205,4 +206,28 @@ public class IAService {
                 question
         );
     }
+
+    public JSONObject responderPergunta(String question, Usuario usuario) {
+        String prompt = """
+        Você é um assistente de investimentos.
+
+        "%s"
+
+        Responda de forma clara, objetiva e técnica, considerando o perfil e metas de investimento.
+
+        Retorne SOMENTE este JSON:
+        {
+          "resposta": "<mensagem explicativa>"
+        }
+        """.formatted(
+                question
+        );
+
+        try {
+            return chamarOpenAI(prompt);
+        } catch (Exception e) {
+            throw new RuntimeException("Erro ao chamar IA: " + e.getMessage(), e);
+        }
+    }
+
 }
