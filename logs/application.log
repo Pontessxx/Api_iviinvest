@@ -1,24 +1,24 @@
-2025-05-19T09:12:31.433-03:00  INFO 89916 --- [Iviinvest] [restartedMain] com.Iviinvest.IviinvestApplication       : Starting IviinvestApplication using Java 17.0.14 with PID 89916 (C:\Users\Henrique\Venvs_pontes\Iviinvest\target\classes started by Henrique in C:\Users\Henrique\Venvs_pontes\Iviinvest)
-2025-05-19T09:12:31.468-03:00  INFO 89916 --- [Iviinvest] [restartedMain] com.Iviinvest.IviinvestApplication       : No active profile set, falling back to 1 default profile: "default"
-2025-05-19T09:12:31.794-03:00  INFO 89916 --- [Iviinvest] [restartedMain] o.s.b.devtools.restart.ChangeableUrls    : The Class-Path manifest attribute in C:\Users\Henrique\.m2\repository\com\oracle\database\jdbc\ojdbc11\23.5.0.24.07\ojdbc11-23.5.0.24.07.jar referenced one or more files that do not exist: file:/C:/Users/Henrique/.m2/repository/com/oracle/database/jdbc/ojdbc11/23.5.0.24.07/oraclepki.jar
-2025-05-19T09:12:31.796-03:00  INFO 89916 --- [Iviinvest] [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
-2025-05-19T09:12:31.797-03:00  INFO 89916 --- [Iviinvest] [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
-2025-05-19T09:12:38.497-03:00  INFO 89916 --- [Iviinvest] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
-2025-05-19T09:12:39.309-03:00  INFO 89916 --- [Iviinvest] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 760 ms. Found 5 JPA repository interfaces.
-2025-05-19T09:12:43.546-03:00  INFO 89916 --- [Iviinvest] [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
-2025-05-19T09:12:43.639-03:00  INFO 89916 --- [Iviinvest] [restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
-2025-05-19T09:12:43.640-03:00  INFO 89916 --- [Iviinvest] [restartedMain] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.39]
-2025-05-19T09:12:44.065-03:00  INFO 89916 --- [Iviinvest] [restartedMain] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
-2025-05-19T09:12:44.066-03:00  INFO 89916 --- [Iviinvest] [restartedMain] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 12266 ms
-2025-05-19T09:12:45.029-03:00  INFO 89916 --- [Iviinvest] [restartedMain] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
-2025-05-19T09:12:45.349-03:00  INFO 89916 --- [Iviinvest] [restartedMain] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.11.Final
-2025-05-19T09:12:45.837-03:00  INFO 89916 --- [Iviinvest] [restartedMain] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
-2025-05-19T09:12:47.258-03:00  INFO 89916 --- [Iviinvest] [restartedMain] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
-2025-05-19T09:12:47.396-03:00  INFO 89916 --- [Iviinvest] [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
-2025-05-19T09:12:49.223-03:00  INFO 89916 --- [Iviinvest] [restartedMain] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection conn0: url=jdbc:h2:file:./data/testdb user=SA
-2025-05-19T09:12:49.228-03:00  INFO 89916 --- [Iviinvest] [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
-2025-05-19T09:12:49.305-03:00  WARN 89916 --- [Iviinvest] [restartedMain] org.hibernate.orm.deprecation            : HHH90000025: H2Dialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
-2025-05-19T09:12:49.408-03:00  INFO 89916 --- [Iviinvest] [restartedMain] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+2025-09-01T20:50:04.972-03:00  INFO 23040 --- [Iviinvest] [restartedMain] com.Iviinvest.IviinvestApplication       : Starting IviinvestApplication using Java 17.0.14 with PID 23040 (C:\Users\Henrique\Venvs_pontes\Iviinvest\target\classes started by Henrique in C:\Users\Henrique\Venvs_pontes\Iviinvest)
+2025-09-01T20:50:05.019-03:00  INFO 23040 --- [Iviinvest] [restartedMain] com.Iviinvest.IviinvestApplication       : No active profile set, falling back to 1 default profile: "default"
+2025-09-01T20:50:05.298-03:00  INFO 23040 --- [Iviinvest] [restartedMain] o.s.b.devtools.restart.ChangeableUrls    : The Class-Path manifest attribute in C:\Users\Henrique\.m2\repository\com\oracle\database\jdbc\ojdbc11\23.5.0.24.07\ojdbc11-23.5.0.24.07.jar referenced one or more files that do not exist: file:/C:/Users/Henrique/.m2/repository/com/oracle/database/jdbc/ojdbc11/23.5.0.24.07/oraclepki.jar
+2025-09-01T20:50:05.300-03:00  INFO 23040 --- [Iviinvest] [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
+2025-09-01T20:50:05.300-03:00  INFO 23040 --- [Iviinvest] [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
+2025-09-01T20:50:09.275-03:00  INFO 23040 --- [Iviinvest] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-09-01T20:50:09.986-03:00  INFO 23040 --- [Iviinvest] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 679 ms. Found 5 JPA repository interfaces.
+2025-09-01T20:50:12.616-03:00  INFO 23040 --- [Iviinvest] [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2025-09-01T20:50:12.643-03:00  INFO 23040 --- [Iviinvest] [restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2025-09-01T20:50:12.643-03:00  INFO 23040 --- [Iviinvest] [restartedMain] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.39]
+2025-09-01T20:50:12.760-03:00  INFO 23040 --- [Iviinvest] [restartedMain] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2025-09-01T20:50:12.763-03:00  INFO 23040 --- [Iviinvest] [restartedMain] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 7463 ms
+2025-09-01T20:50:13.117-03:00  INFO 23040 --- [Iviinvest] [restartedMain] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-09-01T20:50:13.316-03:00  INFO 23040 --- [Iviinvest] [restartedMain] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.11.Final
+2025-09-01T20:50:13.409-03:00  INFO 23040 --- [Iviinvest] [restartedMain] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2025-09-01T20:50:13.985-03:00  INFO 23040 --- [Iviinvest] [restartedMain] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-09-01T20:50:14.051-03:00  INFO 23040 --- [Iviinvest] [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2025-09-01T20:50:15.079-03:00  INFO 23040 --- [Iviinvest] [restartedMain] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection conn0: url=jdbc:h2:file:./data/testdb user=SA
+2025-09-01T20:50:15.085-03:00  INFO 23040 --- [Iviinvest] [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2025-09-01T20:50:15.200-03:00  WARN 23040 --- [Iviinvest] [restartedMain] org.hibernate.orm.deprecation            : HHH90000025: H2Dialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-09-01T20:50:15.300-03:00  INFO 23040 --- [Iviinvest] [restartedMain] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
 	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
 	Database driver: undefined/unknown
 	Database version: 2.3.232
@@ -26,36 +26,27 @@
 	Isolation level: undefined/unknown
 	Minimum pool size: undefined/unknown
 	Maximum pool size: undefined/unknown
-2025-05-19T09:12:53.572-03:00  INFO 89916 --- [Iviinvest] [restartedMain] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
-2025-05-19T09:12:53.779-03:00  INFO 89916 --- [Iviinvest] [restartedMain] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
-2025-05-19T09:12:56.594-03:00  WARN 89916 --- [Iviinvest] [restartedMain] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
-2025-05-19T09:12:56.705-03:00  WARN 89916 --- [Iviinvest] [restartedMain] .s.s.UserDetailsServiceAutoConfiguration : 
+2025-09-01T20:50:18.489-03:00  INFO 23040 --- [Iviinvest] [restartedMain] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-09-01T20:50:18.590-03:00  INFO 23040 --- [Iviinvest] [restartedMain] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-09-01T20:50:20.138-03:00  WARN 23040 --- [Iviinvest] [restartedMain] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2025-09-01T20:50:20.199-03:00  WARN 23040 --- [Iviinvest] [restartedMain] .s.s.UserDetailsServiceAutoConfiguration : 
 
-Using generated security password: 056caabc-708d-4369-82d2-33a5b4aca39d
+Using generated security password: 26cf25a3-884c-4a21-be5c-411cec77bf81
 
 This generated password is for development use only. Your security configuration must be updated before running your application in production.
 
-2025-05-19T09:12:56.737-03:00  INFO 89916 --- [Iviinvest] [restartedMain] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name inMemoryUserDetailsManager
-2025-05-19T09:12:59.197-03:00  WARN 89916 --- [Iviinvest] [restartedMain] ion$DefaultTemplateResolverConfiguration : Cannot find template location: classpath:/templates/ (please add some templates, check your Thymeleaf configuration, or set spring.thymeleaf.check-template-location=false)
-2025-05-19T09:12:59.757-03:00  INFO 89916 --- [Iviinvest] [restartedMain] o.s.b.a.h2.H2ConsoleAutoConfiguration    : H2 console available at '/h2-console'. Database available at 'jdbc:h2:file:./data/testdb'
-2025-05-19T09:13:00.260-03:00  INFO 89916 --- [Iviinvest] [restartedMain] o.s.b.d.a.OptionalLiveReloadServer       : LiveReload server is running on port 35729
-2025-05-19T09:13:00.655-03:00  INFO 89916 --- [Iviinvest] [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path '/'
-2025-05-19T09:13:00.722-03:00  INFO 89916 --- [Iviinvest] [restartedMain] com.Iviinvest.IviinvestApplication       : Started IviinvestApplication in 31.699 seconds (process running for 37.686)
-2025-05-19T09:15:02.705-03:00  INFO 89916 --- [Iviinvest] [http-nio-8080-exec-2] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
-2025-05-19T09:15:02.706-03:00  INFO 89916 --- [Iviinvest] [http-nio-8080-exec-2] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
-2025-05-19T09:15:02.712-03:00  INFO 89916 --- [Iviinvest] [http-nio-8080-exec-2] o.s.web.servlet.DispatcherServlet        : Completed initialization in 5 ms
-2025-05-19T09:15:04.369-03:00  INFO 89916 --- [Iviinvest] [http-nio-8080-exec-1] c.Iviinvest.controller.AuthController    : ---------- [POST] - LOGIN ATTEMPT FOR: h***@gmail.com ----------
-2025-05-19T09:15:05.352-03:00  INFO 89916 --- [Iviinvest] [http-nio-8080-exec-1] com.Iviinvest.service.UsuarioService     : [AUTH] Login bem-sucedido para: hpo.pontes@gmail.com
-2025-05-19T09:15:05.864-03:00  INFO 89916 --- [Iviinvest] [http-nio-8080-exec-1] c.Iviinvest.controller.AuthController    : SUCCESSFUL LOGIN FOR USER: h***@gmail.com
-2025-05-19T09:15:21.580-03:00  INFO 89916 --- [Iviinvest] [http-nio-8080-exec-4] c.I.controller.TwoFactorAuthController   : [2FA SEND] Código gerado para: h***@gmail.com
-2025-05-19T09:15:33.485-03:00  INFO 89916 --- [Iviinvest] [http-nio-8080-exec-5] c.I.controller.TwoFactorAuthController   : [2FA VERIFY] Código validado com sucesso para: h***@gmail.com
-2025-05-19T09:15:54.180-03:00  INFO 89916 --- [Iviinvest] [http-nio-8080-exec-8] c.I.c.ObjetivoUsuarioController          : [POST] - Solicitado salvamento de objetivo para usuário: h***@gmail.com
-2025-05-19T09:15:54.555-03:00  INFO 89916 --- [Iviinvest] [http-nio-8080-exec-8] c.I.c.ObjetivoUsuarioController          : [POST] - Objetivo salvo com sucesso para usuário: h***@gmail.com
-2025-05-19T09:15:58.986-03:00  WARN 89916 --- [Iviinvest] [http-nio-8080-exec-9] .w.s.m.s.DefaultHandlerExceptionResolver : Resolved [org.springframework.http.converter.HttpMessageNotReadableException: Required request body is missing: public org.springframework.http.ResponseEntity<?> com.Iviinvest.controller.CarteiraUsuarioController.gerarAtivos(org.springframework.security.core.userdetails.User,java.util.Map<java.lang.String, java.util.Map<java.lang.String, java.lang.Integer>>) throws java.lang.Exception]
-2025-05-19T09:16:59.818-03:00  INFO 89916 --- [Iviinvest] [http-nio-8080-exec-7] c.I.c.ObjetivoUsuarioController          : [GET] - Solicitada listagem do histórico de objetivos para usuário: h***@gmail.com
-2025-05-19T09:16:59.844-03:00  INFO 89916 --- [Iviinvest] [http-nio-8080-exec-7] c.I.c.ObjetivoUsuarioController          : [GET] - 3 objetivos retornados para histórico do usuário: h***@gmail.com
-2025-05-19T09:17:22.905-03:00  INFO 89916 --- [Iviinvest] [SpringApplicationShutdownHook] o.s.b.w.e.tomcat.GracefulShutdown        : Commencing graceful shutdown. Waiting for active requests to complete
-2025-05-19T09:17:23.873-03:00  INFO 89916 --- [Iviinvest] [tomcat-shutdown] o.s.b.w.e.tomcat.GracefulShutdown        : Graceful shutdown complete
-2025-05-19T09:17:24.168-03:00  INFO 89916 --- [Iviinvest] [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
-2025-05-19T09:17:24.199-03:00  INFO 89916 --- [Iviinvest] [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
-2025-05-19T09:17:24.210-03:00  INFO 89916 --- [Iviinvest] [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+2025-09-01T20:50:20.225-03:00  INFO 23040 --- [Iviinvest] [restartedMain] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name inMemoryUserDetailsManager
+2025-09-01T20:50:22.277-03:00  WARN 23040 --- [Iviinvest] [restartedMain] ion$DefaultTemplateResolverConfiguration : Cannot find template location: classpath:/templates/ (please add some templates, check your Thymeleaf configuration, or set spring.thymeleaf.check-template-location=false)
+2025-09-01T20:50:22.726-03:00  INFO 23040 --- [Iviinvest] [restartedMain] o.s.b.a.h2.H2ConsoleAutoConfiguration    : H2 console available at '/h2-console'. Database available at 'jdbc:h2:file:./data/testdb'
+2025-09-01T20:50:23.041-03:00  INFO 23040 --- [Iviinvest] [restartedMain] o.s.b.d.a.OptionalLiveReloadServer       : LiveReload server is running on port 35729
+2025-09-01T20:50:23.402-03:00  INFO 23040 --- [Iviinvest] [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path '/'
+2025-09-01T20:50:23.463-03:00  INFO 23040 --- [Iviinvest] [restartedMain] com.Iviinvest.IviinvestApplication       : Started IviinvestApplication in 20.23 seconds (process running for 28.043)
+2025-09-01T20:55:31.371-03:00  INFO 23040 --- [Iviinvest] [http-nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-09-01T20:55:31.372-03:00  INFO 23040 --- [Iviinvest] [http-nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2025-09-01T20:55:31.374-03:00  INFO 23040 --- [Iviinvest] [http-nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 2 ms
+2025-09-01T20:55:32.630-03:00  INFO 23040 --- [Iviinvest] [http-nio-8080-exec-9] o.springdoc.api.AbstractOpenApiResource  : Init duration for springdoc-openapi is: 703 ms
+2025-09-01T21:01:46.926-03:00  INFO 23040 --- [Iviinvest] [SpringApplicationShutdownHook] o.s.b.w.e.tomcat.GracefulShutdown        : Commencing graceful shutdown. Waiting for active requests to complete
+2025-09-01T21:01:47.050-03:00  INFO 23040 --- [Iviinvest] [tomcat-shutdown] o.s.b.w.e.tomcat.GracefulShutdown        : Graceful shutdown complete
+2025-09-01T21:01:47.111-03:00  INFO 23040 --- [Iviinvest] [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2025-09-01T21:01:47.127-03:00  INFO 23040 --- [Iviinvest] [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2025-09-01T21:01:47.127-03:00  INFO 23040 --- [Iviinvest] [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
