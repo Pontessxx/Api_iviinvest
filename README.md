@@ -4,9 +4,10 @@ Fornece autenticação com 2FA por e-mail, recuperação de senha, perfil de inv
 ## Estrutura
 
 Front-end é feito em REACT-NATIVE, [Link do projeto](https://github.com/Pontessxx/IviInvest) temos telas já prontas com figma:
-![img]()
+![img](https://github.com/Pontessxx/Api_iviinvest/blob/master/figma_img.png)
 
 ## Endpoints (overview)
+![img](https://github.com/Pontessxx/Api_iviinvest/blob/master/insomnia.png)
 #### Autenticação & 2FA
 - `POST` /api/v1/auth/login – login (etapa 1, sem JWT ainda)
 - `POST` /api/v1/auth/2fa/send – envia código 2FA por e-mail
