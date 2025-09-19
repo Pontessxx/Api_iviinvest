@@ -3,6 +3,14 @@ Fornece autenticação com 2FA por e-mail, recuperação de senha, perfil de inv
 
 ## Estrutura
 
+| Nome | RM |
+|------|-----|
+| Henrique Pontes Oliveira | RM98036 |
+| Levy Nascimento Junior | RM98655 |
+| Rafael Autieri dos Anjos | RM550885 |
+| Rafael Carvalho Mattos | RM99874 |
+| Vinicius Santos Yamashita de Farias | rm550885 |
+
 Front-end é feito em REACT-NATIVE, [Link do projeto](https://github.com/Pontessxx/IviInvest) temos telas já prontas com figma:
 ![img](https://github.com/Pontessxx/Api_iviinvest/blob/master/figma_img.png)
 
