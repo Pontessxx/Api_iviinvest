@@ -1,6 +1,14 @@
 # Ivi Invest – API (Spring Boot, Java 17)
 Fornece autenticação com 2FA por e-mail, recuperação de senha, perfil de investidor, fluxo de objetivos e carteiras (percentuais, ativos, simulação), além de um endpoint de chat para perguntas sobre a carteira.
 
+| Nome | RM |
+|------|-----|
+| Henrique Pontes Oliveira | RM98036 |
+| Levy Nascimento Junior | RM98655 |
+| Rafael Autieri dos Anjos | RM550885 |
+| Rafael Carvalho Mattos | RM99874 |
+| Vinicius Santos Yamashita de Farias | rm550885 |
+
 ## Estrutura
 
 | Nome | RM |
@@ -12,6 +20,7 @@ Fornece autenticação com 2FA por e-mail, recuperação de senha, perfil de inv
 | Vinicius Santos Yamashita de Farias | rm550885 |
 
 Front-end é feito em REACT-NATIVE, [Link do projeto](https://github.com/Pontessxx/IviInvest) temos telas já prontas com figma:
+*[API - FACE RECOG](https://github.com/Pontessxx/API_FACERECOG_IVINVEST)*
 ![img](https://github.com/Pontessxx/Api_iviinvest/blob/master/figma_img.png)
 
 ## Endpoints (overview)
