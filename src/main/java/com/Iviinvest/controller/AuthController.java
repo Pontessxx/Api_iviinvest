@@ -2,12 +2,17 @@ package com.Iviinvest.controller;
 
 import com.Iviinvest.dto.ErrorResponseDTO;
 import com.Iviinvest.dto.LoginDTO;
+import com.Iviinvest.model.Usuario;
+import com.Iviinvest.repository.UsuarioRepository;
+import com.Iviinvest.service.JwtService;
 import com.Iviinvest.service.UsuarioService;
 import com.Iviinvest.util.EmailUtils;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -31,6 +36,8 @@ public class AuthController {
     private static final Logger log = LoggerFactory.getLogger(AuthController.class);
 
     private final UsuarioService service;
+    private final UsuarioRepository usuarioRepository;
+    private final JwtService jwtService;
 
     /**
      * Construtor para injeção de dependência do serviço de usuário.
@@ -41,9 +48,12 @@ public class AuthController {
      *
      * @param service The user service to be injected
      */
-    public AuthController(UsuarioService service) {
+    public AuthController(UsuarioService service, UsuarioRepository usuarioRepository, JwtService jwtService) {
         this.service = service;
+        this.usuarioRepository = usuarioRepository;
+        this.jwtService = jwtService;
     }
+
 
     /**
      * Realiza o login do usuário e retorna um token JWT em caso de sucesso.
@@ -167,4 +177,49 @@ public class AuthController {
                     ));
         }
     }
+
+
+
+    @PostMapping("/login-face")
+    public ResponseEntity<?> loginComFace(
+            @RequestHeader(value = "X-Internal-Key", required = false) String keyHeader,
+            @RequestBody Map<String, String> body,
+            HttpServletRequest req) {
+
+        // 🔎 Log de todos os headers (debug)
+        //var names = req.getHeaderNames();
+        //while (names.hasMoreElements()) {
+        //    String n = names.nextElement();
+        //    log.info("[HDR] {} = {}", n, req.getHeader(n));
+        //}
+
+        // 🔄 Tenta também a variação em minúsculas (alguns proxies convertem)
+        String alt = req.getHeader("x-internal-key");
+
+        // 🧼 Normaliza
+        String key = keyHeader != null ? keyHeader.trim() : (alt != null ? alt.trim() : null);
+
+        // ⚠️ Log do valor recebido e tamanho (pega caracteres invisíveis)
+        //log.info("[FACE-LOGIN] X-Internal-Key recebido='{}' len={}", key, (key == null ? 0 : key.length()));
+
+        // ✅ Compare com trim
+        final String EXPECTED = "MINHA_CHAVE_INTERNA_SECRETA";
+        if (key == null || !EXPECTED.equals(key)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Chave interna inválida");
+        }
+
+        String email = body.get("email");
+        if (email == null || email.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "E-mail é obrigatório");
+        }
+
+        Usuario usuario = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Usuário não encontrado"));
+
+        String token = jwtService.generateToken(usuario);
+        return ResponseEntity.ok(Map.of("token", token));
+    }
+
+
+
 }

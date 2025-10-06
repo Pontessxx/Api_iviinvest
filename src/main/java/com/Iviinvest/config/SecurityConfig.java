@@ -10,6 +10,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.http.HttpMethod;
 
 /**
  * Configuração principal de segurança da aplicação.
@@ -75,6 +76,7 @@ public class SecurityConfig {
                         // Permite acesso público aos endpoints de autenticação
                         // Allows public access to authentication endpoints
                         .requestMatchers("/api/v1/auth/login", "/api/auth/register").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/auth/login-face").permitAll()
 
                         // Permite acesso público aos endpoints de recuperação de senha
                         // Allows public access to password recovery endpoints
