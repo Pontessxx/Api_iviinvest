@@ -75,7 +75,7 @@ public class SecurityConfig {
 
                         // Permite acesso público aos endpoints de autenticação
                         // Allows public access to authentication endpoints
-                        .requestMatchers("/api/v1/auth/login", "/api/auth/v1/register").permitAll()
+                        .requestMatchers("/api/v1/auth/login", "/api/v1/auth/register").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/login-face").permitAll()
 
                         // Permite acesso público aos endpoints de recuperação de senha
